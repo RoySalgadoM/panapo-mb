@@ -1,0 +1,32 @@
+import React from 'react'
+import { Center, Modal, FormControl, Input, Button, Text } from 'native-base';
+
+export default function ModalComponent(props) {
+    const { showModal, setShowModal, content, header } = props;
+    return (
+        <Center>
+            <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+                <Modal.Content maxWidth="400px">
+                    <Modal.Header bg={"#042B61"}><Text color={"white"}>{header}</Text></Modal.Header>
+                    <Modal.Body>
+                        {content}
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button.Group space={2}>
+                            <Button bg={"#dc3545"} onPress={() => {
+                                setShowModal(false);
+                            }}>
+                                <Text color={"white"}>Cancelar</Text>
+                            </Button>
+                            <Button bg={"#28a745"} onPress={() => {
+                                setShowModal(false);
+                            }}>
+                                <Text color={"white"}>Confirmar</Text>
+                            </Button>
+                        </Button.Group>
+                    </Modal.Footer>
+                </Modal.Content>
+            </Modal>
+        </Center>
+    )
+}
