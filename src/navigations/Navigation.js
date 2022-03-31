@@ -24,25 +24,13 @@ export default function Navigation(props) {
     console.log("s")
   }, [navigation])
   
-  const getData = async () => {
-    try {
-      let data = await AsyncStorage.getItem('isLogged')
-      if(data === "true"){
-        setLogged(false);
-      }else{
-        setLogged(true)
-      }
-    } catch(e) {
-      console.log(e)
-      // error reading value
-    }
-  }
+  
   
   return (
-    <NavigationContainer>
-      <Drawer.Navigator >
+    <NavigationContainer  >
+      <Drawer.Navigator>
         <Drawer.Screen name="index" component={Login} options={{headerShown: false, hidden: true, drawerItemStyle: { display: 'none' }}}></Drawer.Screen>
-        <Drawer.Screen name="forgotPassword" component={ForgotPassword} options={{headerShown: false, hidden: true, drawerItemStyle: { display: 'none' }}}/>
+        <Drawer.Screen name="forgotPassword"  component={ForgotPassword} options={{headerShown: false, hidden: true, drawerItemStyle: { display: 'none' }}}/>
         <Drawer.Screen name="recoverPassword" component={RecoverPassword} options={{headerShown: false, hidden: true, drawerItemStyle: { display: 'none' }}}/>
         <Drawer.Screen  name="dashboard" options={{title:"Dashboard"}} component={Dashboard} />
         <Drawer.Screen  name="direction" options={{title:"Gestión de usuarios de alta dirección"}} component={AltaDireccion} />
