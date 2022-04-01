@@ -31,7 +31,7 @@ export default function Login(props) {
           await AsyncStorage.setItem("token", responseJson.data.token)
           setErrorAlert(false)
           setDataLogin([])
-          props.navigation.navigate("dashboard")
+          setLogged(true)
         } catch (e) {
           
         }
@@ -41,17 +41,7 @@ export default function Login(props) {
       });
       
   }
-  if (logged) {
-    return (
-      <View>
-        <Text>Ya logueado</Text>
-        <Button onPress={() => props.navigation.navigate("dashboard")}>
-          Ir
-        </Button>
-      </View>
-    )
-  } else {
-    return (
+  return (
       <Center flexDirection={"column"} alignItems={"center"} style={[STYLES.backBlue, styles.height100, STYLES.fontWhite]}>
         <Center w="90%" bg={"white"}>
         {errorAlert ? <AlertComponent isOpen={setErrorAlert} status={"error"} title={"Contraseña o usuario incorrecto"}/> : null}
@@ -88,7 +78,6 @@ export default function Login(props) {
         </Center>
       </Center>
     )
-  }
 
 }
 const styles = StyleSheet.create({

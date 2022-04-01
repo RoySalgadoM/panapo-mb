@@ -7,11 +7,12 @@ import ProgressBarComponent from '../components/ProgressBarComponent';
 import IconButtonComponent from '../components/IconButtonComponent';
 import OvalosTextComponent from '../components/OvalosTextComponent';
 import { CommonActions } from '@react-navigation/native';
+import Example from './Modulo1/Example';
 
 export default function Dashboard(props) {
   return (
     <View style={{ backgroundColor: "#ffffff" }} alignItems={"center"} >
-
+      
       <ScrollView _contentContainerStyle={{
         minW: "100%"
       }}>

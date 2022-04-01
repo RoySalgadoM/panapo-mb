@@ -6,12 +6,11 @@ export default function Logout(props) {
   console.log(props)
     const logout = async () => {
         try {
-          await AsyncStorage.setItem("isLogged","false")
+          await AsyncStorage.setItem("token","undefined")
          
         } catch (e) {
             console.log(e)
         }
-        props.navigation.jumpTo("index")
       }
     useEffect(() => {
       logout()

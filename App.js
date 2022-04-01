@@ -14,6 +14,7 @@ import {
 } from "native-base";
 import NativeBaseIcon from "./components/NativeBaseIcon";
 import Navigation from "./src/navigations/Navigation";
+import Index from "./src/screens/Index";
 
 // Define the config
 const config = {
@@ -26,9 +27,8 @@ export const theme = extendTheme({ config });
 
 export default function App(props) {
   return (
-    
     <NativeBaseProvider>
-      <Navigation/>
+      <Index/>
     </NativeBaseProvider>
   );
 }
