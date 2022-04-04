@@ -1,13 +1,11 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 import TableComponent from '../components/TableComponent'
-import { Center, ScrollView, Flex, Divider, Button } from "native-base";
-import { MinusIcon, IconButton, Progress, Box } from "native-base";
+import { Center, ScrollView, Flex, Divider} from "native-base";
+import {Box } from "native-base";
 import ProgressBarComponent from '../components/ProgressBarComponent';
-import IconButtonComponent from '../components/IconButtonComponent';
 import OvalosTextComponent from '../components/OvalosTextComponent';
-import { CommonActions } from '@react-navigation/native';
-import Example from './Modulo1/Example';
+
 
 export default function Dashboard(props) {
   return (

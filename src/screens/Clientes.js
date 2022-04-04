@@ -1,7 +1,7 @@
 import { View } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import TableComponent from '../components/TableComponent'
-import { Center, ScrollView, Input, Stack, FormControl, WarningOutlineIcon, Modal } from "native-base";
+import { Center, ScrollView, Input, Stack, FormControl, WarningOutlineIcon, Modal, Text, Select, CheckIcon } from "native-base";
 import BoxHeaderComponent from '../components/BoxHeaderComponent'
 import ActionsButtons from '../components/ActionsButtons'
 import ModalComponent from '../components/ModalComponent'
@@ -11,7 +11,7 @@ import { ipServer } from "../config/Config"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loading from '../components/Loading';
 
-export default function AltaDireccion() {
+export default function Clientes() {
     const [showModal, setShowModal] = useState(false);
     const [showAlertDelete, setShowAlertDelete] = useState(false);
     const [isOpenAlertDelete, setisOpenAlertDelete] = useState(false)
@@ -34,7 +34,7 @@ export default function AltaDireccion() {
         setisOpenAlertDelete(true)
         console.log(object)
     }
-    
+
     const modify = async () => {
         await getToken()
         console.log(objectModify)
@@ -229,27 +229,71 @@ export default function AltaDireccion() {
             <ScrollView _contentContainerStyle={{
                 minW: "100%"
             }}>
-                <BoxHeaderComponent isButton={true} action={register} isOpen={false} title={"Registrar directivo"} showIcon={true} Form={
+
+                <BoxHeaderComponent isButton={true} action={register} isOpen={false} title={"Registrar clientes"} showIcon={true} Form={
+
                     <Center>
-                        <Stack mt={3} space={4} w="100%">
-                            <FormControl isRequired>
-                                <FormControl.Label>Nombre</FormControl.Label>
-                                <Input value={object.name} onChangeText={value => setObject({ ...object, ["name"]: value })} type='text' placeholder='Ejemplo: María' />
-                            </FormControl>
-                            <FormControl isRequired>
-                                <FormControl.Label>Primer apellido</FormControl.Label>
-                                <Input value={object.surname} type='text' onChangeText={value => setObject({ ...object, ["surname"]: value })} placeholder='Ejemplo: Valdez' />
-                            </FormControl>
-                            <FormControl isRequired>
-                                <FormControl.Label>Segundo apellido</FormControl.Label>
-                                <Input type='text' value={object.secondSurname} onChangeText={value => setObject({ ...object, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
-                            </FormControl>
-                            <FormControl isRequired>
-                                <FormControl.Label>Correo electrónico</FormControl.Label>
-                                <Input type='email' value={object.email} onChangeText={value => setObject({ ...object, ["email"]: value })} placeholder='Ejemplo: utez@utez.edu.mx' />
-                            </FormControl>
-                            {isLoadingRegister ? <Loading /> : null}
-                        </Stack>
+                        <BoxHeaderComponent isButton={false} action={register} isOpen={false} title={"Datos del cliente"} showIcon={true} Form={
+                            <Stack mt={3} space={4} w="100%">
+                                <FormControl isRequired>
+                                    <FormControl.Label>Nombre</FormControl.Label>
+                                    <Input value={object.name} onChangeText={value => setObject({ ...object, ["name"]: value })} type='text' placeholder='Ejemplo: María' />
+                                </FormControl>
+                                <FormControl isRequired>
+                                    <FormControl.Label>Primer apellido</FormControl.Label>
+                                    <Input value={object.surname} type='text' onChangeText={value => setObject({ ...object, ["surname"]: value })} placeholder='Ejemplo: Valdez' />
+                                </FormControl>
+                                <FormControl isRequired>
+                                    <FormControl.Label>Segundo apellido</FormControl.Label>
+                                    <Input type='text' value={object.secondSurname} onChangeText={value => setObject({ ...object, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
+                                </FormControl>
+                                <FormControl isRequired>
+                                    <FormControl.Label>Nombre de la empresa</FormControl.Label>
+                                    <Input type='text' value={object.secondSurname} onChangeText={value => setObject({ ...object, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
+                                </FormControl>
+                                <FormControl isRequired>
+                                    <FormControl.Label>Teléfono</FormControl.Label>
+                                    <Input type='number' value={object.secondSurname} onChangeText={value => setObject({ ...object, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
+                                </FormControl>
+                                <FormControl isRequired>
+                                    <FormControl.Label>Tipo de cliente</FormControl.Label>
+                                    <Select selectedValue={object.secondSurname} accessibilityLabel="Eco" placeholder="Seleccionar" _selectedItem={{
+                                        bg: "teal.600",
+                                        endIcon: <CheckIcon size="5" />
+                                    }} mt={1} onValueChange={value => setObject({ ...object, ["secondSurname"]: value })}>
+                                        <Select.Item label="Externo" value="externo" />
+                                        <Select.Item label="Interno" value="interno" />
+                                    </Select>                                
+                                    </FormControl>
+
+                            </Stack>
+                        } />
+                        <BoxHeaderComponent isButton={false} action={register} isOpen={false} title={"Datos del representante del cliente"} showIcon={true} Form={
+                            <Stack mt={3} space={4} w="100%">
+                                <FormControl isRequired>
+                                    <FormControl.Label>Nombre</FormControl.Label>
+                                    <Input value={object.name} onChangeText={value => setObject({ ...object, ["name"]: value })} type='text' placeholder='Ejemplo: María' />
+                                </FormControl>
+                                <FormControl isRequired>
+                                    <FormControl.Label>Primer apellido</FormControl.Label>
+                                    <Input value={object.surname} type='text' onChangeText={value => setObject({ ...object, ["surname"]: value })} placeholder='Ejemplo: Valdez' />
+                                </FormControl>
+                                <FormControl isRequired>
+                                    <FormControl.Label>Segundo apellido</FormControl.Label>
+                                    <Input type='text' value={object.secondSurname} onChangeText={value => setObject({ ...object, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
+                                </FormControl>
+                                <FormControl isRequired>
+                                    <FormControl.Label>Teléfono</FormControl.Label>
+                                    <Input type='number' value={object.secondSurname} onChangeText={value => setObject({ ...object, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
+                                </FormControl>
+                                <FormControl isRequired>
+                                    <FormControl.Label>Correo electrónico</FormControl.Label>
+                                    <Input type='email' value={object.email} onChangeText={value => setObject({ ...object, ["email"]: value })} placeholder='Ejemplo: utez@utez.edu.mx' />
+                                </FormControl>
+                                {isLoadingRegister ? <Loading /> : null}
+                            </Stack>
+                        } />
+
                     </Center>
 
 

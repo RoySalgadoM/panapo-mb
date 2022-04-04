@@ -2,16 +2,27 @@ import React, { useRef, useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView, Text } from 'react-native';
 import { Table, TableWrapper, Row, Rows, Col } from 'react-native-table-component';
 import { Icon } from 'react-native-elements';
-
+import FilterComponent from "../components/FilterComponent"
 import { Box, MinusIcon, Flex, AddIcon, IconButton, VStack, Center, Button, PresenceTransition, FormControl, Input } from "native-base";
 import ActionsButtons from './ActionsButtons';
+import Loading from './Loading';
 
 
 export default function TableComponent(props) {
-    const { title, tableHead, widthArr, data, showIcon, isOpen, isSearch } = props;
+    const { title, tableHead, widthArr, data, showIcon, isOpen, isSearch, setisLoadingTable, isLoadingTable } = props;
     const [isShow, setIsShow] = useState(isOpen)
+    const [filterText, setFilterText] = useState("");
 
-
+    const filteredItems = data.filter(
+        (item) => {
+            console.log(item[1])
+            if(filterText===""){
+                return item = item
+            }else if(item[1].toLowerCase().includes(filterText.toLowerCase())){
+                return item = item
+            }
+        });
+      
     const myRef = React.useRef({});
     React.useEffect(() => {
         const styleObj = {
@@ -90,43 +101,38 @@ export default function TableComponent(props) {
                         fontWeight: "bold",
                         color: "black"
                     }} ref={myRef}>
-                        {isSearch ? 
-                        <Box flex="1" mt={-10} safeAreaTop>
-                            <ScrollView>
-                                <VStack space={2.5} w="100%" px="3">
-                                    <Flex direction="row" mb="2.5" mt="1.5" _text={{
-                                        color: "coolGray.800"
-                                    }}>
-                                        <Center width={"83%"}>
-                                            <FormControl>
-                                                <Input type='text' placeholder='Ingrese el nombre o apellido del directivo' />
-                                            </FormControl>
-                                        </Center>
-                                        <Center size="16">
-                                            <Button onPress={() => console.log("first")} backgroundColor={"#042b61"} leftIcon={<Icon type="font-awesome" name={"search"} color={"white"} />}>
-                                            </Button>
-                                        </Center>
-                                    </Flex>
-                                </VStack>
-                            </ScrollView>
-                        </Box>
-                        :null}
+                        {isSearch ?
+                            <Box flex="1" mt={-10} safeAreaTop>
+                                <ScrollView>
+                                    <VStack space={2.5} w="100%" px="3">
+                                        <Flex direction="row" mb="2.5" mt="1.5" _text={{
+                                            color: "coolGray.800"
+                                        }}>
+                                            <Center width={"100%"}>
+                                            <FilterComponent setFilterText={setFilterText} filterText={filterText} onFilter={filteredItems}/>
+                                            </Center>
+                                        </Flex>
+                                    </VStack>
+                                </ScrollView>
+                            </Box>
+                            : null}
 
                         <ScrollView horizontal={true}>
                             <View>
-                                <Table style={styles.h100} borderStyle={{ borderColor: '#C1C0B9' }}>
+                                {isLoadingTable ? <Loading /> :
+                                    <Table style={styles.h100} borderStyle={{ borderColor: '#C1C0B9' }}>
 
-                                    <Row data={tableHead} widthArr={widthArr} textStyle={styles.text} style={[styles.head, styles.textBold]} />
+                                        <Row data={tableHead} widthArr={widthArr} textStyle={styles.text} style={[styles.head, styles.textBold]} />
 
-                                    <Rows
-                                        data={data}
-                                        style={[styles.row]}
-                                        textStyle={styles.text}
-                                        widthArr={widthArr}
-                                    />
+                                        <Rows
+                                            data={filteredItems}
+                                            style={[styles.row]}
+                                            textStyle={styles.text}
+                                            widthArr={widthArr}
+                                        />
+                                    </Table>
+                                }
 
-
-                                </Table>
                             </View>
                         </ScrollView>
                     </Box>
