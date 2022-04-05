@@ -38,6 +38,9 @@ import Dashboard from './src/screens/Dashboard';
 import AltaDireccion from './src/screens/AltaDireccion';
 import Clientes from './src/screens/Clientes';
 import Personal from './src/screens/Personal';
+import ProjectsCoordinador from './src/screens/projects/ProjectsCoordinador';
+import ProjectsRD from './src/screens/projects/ProjectsRD';
+import ProjectsRape from './src/screens/projects/ProjectsRape';
 export default function App({ navigation }) {
 
   const [state, dispatch] = React.useReducer(
@@ -196,6 +199,7 @@ export default function App({ navigation }) {
                   <Drawer.Screen name="direction" options={{ title: "Gestión de usuarios de alta dirección" }} component={AltaDireccion} />
                   <Drawer.Screen name="clients" options={{ title: "Gestión de clientes" }} component={Clientes} />
                   <Drawer.Screen name="personal" options={{ title: "Gestión de personal" }} component={Personal} />
+                  <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsCoordinador} />
                 </Drawer.Navigator>
                 : state.rolSign == "DIRECTIVO" ?
                   <Drawer.Navigator initialRouteName='dashboard'>
@@ -204,10 +208,12 @@ export default function App({ navigation }) {
                   : state.rolSign == "RD" ?
                     <Drawer.Navigator initialRouteName='dashboard'>
                       <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
+                      <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsRD} />
                     </Drawer.Navigator>
                     : state.rolSign == "RAPE" ?
                       <Drawer.Navigator initialRouteName='dashboard'>
                         <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
+                        <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsRape} />
                       </Drawer.Navigator>
                       : null
           }

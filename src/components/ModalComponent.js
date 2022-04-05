@@ -14,12 +14,12 @@ export default function ModalComponent(props) {
                     </Modal.Body>
                     <Modal.Footer>
                         <Button.Group space={2}>
-                            <Button bg={"#dc3545"} onPress={() => {
+                            <Button bg={"#6c757d"} onPress={() => {
                                 setShowModal(false);
                             }}>
                                 <Text color={"white"}>Cancelar</Text>
                             </Button>
-                            {showButtonConfirm ? <Text></Text> : <Button bg={"#28a745"} onPress={action}>
+                            {showButtonConfirm ? <Text></Text> : <Button bg={"#042B61"} onPress={action}>
                                 <Text color={"white"}>Confirmar</Text>
                             </Button>}
                             
