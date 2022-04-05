@@ -6,23 +6,23 @@ import FilterComponent from "../components/FilterComponent"
 import { Box, MinusIcon, Flex, AddIcon, IconButton, VStack, Center, Button, PresenceTransition, FormControl, Input } from "native-base";
 import ActionsButtons from './ActionsButtons';
 import Loading from './Loading';
+import AlertComponent from './AlertComponent';
 
 
 export default function TableComponent(props) {
     const { title, tableHead, widthArr, data, showIcon, isOpen, isSearch, setisLoadingTable, isLoadingTable } = props;
     const [isShow, setIsShow] = useState(isOpen)
     const [filterText, setFilterText] = useState("");
-
     const filteredItems = data.filter(
         (item) => {
             console.log(item[1])
-            if(filterText===""){
+            if (filterText === "") {
                 return item = item
-            }else if(item[1].toLowerCase().includes(filterText.toLowerCase())){
+            } else if (item[1].toLowerCase().includes(filterText.toLowerCase())) {
                 return item = item
             }
         });
-      
+
     const myRef = React.useRef({});
     React.useEffect(() => {
         const styleObj = {
@@ -109,7 +109,7 @@ export default function TableComponent(props) {
                                             color: "coolGray.800"
                                         }}>
                                             <Center width={"100%"}>
-                                            <FilterComponent setFilterText={setFilterText} filterText={filterText} onFilter={filteredItems}/>
+                                                <FilterComponent setFilterText={setFilterText} filterText={filterText} onFilter={filteredItems} />
                                             </Center>
                                         </Flex>
                                     </VStack>
@@ -121,15 +121,16 @@ export default function TableComponent(props) {
                             <View>
                                 {isLoadingTable ? <Loading /> :
                                     <Table style={styles.h100} borderStyle={{ borderColor: '#C1C0B9' }}>
-
                                         <Row data={tableHead} widthArr={widthArr} textStyle={styles.text} style={[styles.head, styles.textBold]} />
+                                        {filteredItems=="" ? <AlertComponent isOpen={true} status={"error"} title={"No hay datos existentes"} />
+                                            : 
+                                            <Rows
+                                                data={filteredItems}
+                                                style={[styles.row]}
+                                                textStyle={styles.text}
+                                                widthArr={widthArr}
+                                            /> }
 
-                                        <Rows
-                                            data={filteredItems}
-                                            style={[styles.row]}
-                                            textStyle={styles.text}
-                                            widthArr={widthArr}
-                                        />
                                     </Table>
                                 }
 

@@ -31,8 +31,25 @@ export default function AltaDireccion() {
 
     let token = ""
     const onDelete = () => {
-        setisOpenAlertDelete(true)
-        console.log(object)
+        console.log(object.id)
+        fetch(`http://${ipServer}/api/user/` + object.id, {
+                    method: 'DELETE',
+                    headers: {
+                        Accept: 'application/json',
+                        "Authorization": `Bearer${token}`,
+                        'Content-Type': 'application/json',
+                    },
+
+                })
+                    .then((response) => response.json())
+                    .then(async (responseJson) => {
+                        console.log(responseJson)
+                        setObject([])
+                        setisOpenAlertDelete(true)
+                        getAll()
+                        setIsLoadingModify(false)
+                    })
+                setIsLoadingModify(false)
     }
     
     const modify = async () => {
@@ -59,7 +76,6 @@ export default function AltaDireccion() {
                 })
                     .then((response) => response.json())
                     .then(async (responseJson) => {
-                        console.log(responseJson)
                         setObjectModify([])
                         setIsOpenAlertModify(true)
                         getAll()
@@ -79,8 +95,6 @@ export default function AltaDireccion() {
             if (objectModify.person.name === "" || objectModify.person.surname == "" || objectModify.person.secondSurname == "") {
                 setErrorModify(true)
             } else {
-                console.log("token")
-                console.log(token)
                 setIsLoadingModify(true)
                 setEqualsPassword(false)
                 setErrorModify(false)
@@ -97,7 +111,6 @@ export default function AltaDireccion() {
                 })
                     .then((response) => response.json())
                     .then(async (responseJson) => {
-                        console.log(responseJson)
                         setObjectModify([])
                         setIsOpenAlertModify(true)
                         getAll()
@@ -123,8 +136,12 @@ export default function AltaDireccion() {
                     "secondSurname": object.secondSurname,
                     "email": object.email,
                     "profession": {
-                        "id": 2,
-                        "description": "Docente"
+                        "id": 3,
+                        "description": "Directivo"
+                    },
+                    "status": {
+                        "id": 1,
+                        "description": "Activo"
                     }
                 },
                 "authorities": [
@@ -229,7 +246,7 @@ export default function AltaDireccion() {
             <ScrollView _contentContainerStyle={{
                 minW: "100%"
             }}>
-                <BoxHeaderComponent isButton={true} action={register} isOpen={false} title={"Registrar directivo"} showIcon={true} Form={
+                <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} action={register} isOpen={false} title={"Registrar directivo"} showIcon={true} Form={
                     <Center>
                         <Stack mt={3} space={4} w="100%">
                             <FormControl isRequired>

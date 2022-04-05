@@ -1,1 +1,1 @@
-export const ipServer = "192.168.107.212:8081";
+export const ipServer = "192.168.1.73:8081";

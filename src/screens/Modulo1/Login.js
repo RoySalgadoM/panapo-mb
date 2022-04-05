@@ -11,11 +11,12 @@ export default function Login(props) {
   const [dataLogin, setDataLogin] = useState([]);
   const [errorAlert, setErrorAlert] = useState(false)
   const { signIn, getRoles, setRoles } = React.useContext(AuthContext);
+  
   const [errorAlertBlank, setErrorAlertBlank] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const goToForgot = () => {
-    props.navigation.navigate("recoverPassword")
+    props.navigation.navigate("forgotPassword")
   }
 
   const goToDashboard = async () => {

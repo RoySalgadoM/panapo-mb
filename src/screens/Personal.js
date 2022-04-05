@@ -10,8 +10,9 @@ import AlertComponent from '../components/AlertComponent'
 import { ipServer } from "../config/Config"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loading from '../components/Loading';
+import EnableAlertDialogComponent from '../components/EnableAlertDialogComponent';
 
-export default function Clientes() {
+export default function Personal() {
     const [showModal, setShowModal] = useState(false);
     const [showAlertDelete, setShowAlertDelete] = useState(false);
     const [isOpenAlertDelete, setisOpenAlertDelete] = useState(false)
@@ -27,21 +28,66 @@ export default function Clientes() {
     const [errorModify, setErrorModify] = useState(false)
     const [equalsPassword, setEqualsPassword] = useState(false)
     const [showModalInfo, setShowModalInfo] = useState(false)
-
-    const [filterText, setFilterText] = useState("");
-
+    const [showAlertEnable, setShowAlertEnable] = useState(false)
     let token = ""
     const onDelete = () => {
+        let data = {
+            ...objectModify,
+            status: {
+                description: "Inactivo",
+                id: 2,
+            }
+        }
+        fetch(`http://${ipServer}/api/person/`, {
+            method: 'PUT',
+            headers: {
+                Accept: 'application/json',
+                "Authorization": `Bearer${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+
+        })
+            .then((response) => response.json())
+            .then(async (responseJson) => {
+                setisOpenAlertDelete(true)
+                getAll()
+                setObjectModify([])
+            })
+    }
+    const onEnable = () => {
         setisOpenAlertDelete(true)
-        console.log(object)
+        let data = {
+            ...objectModify,
+            status: {
+                description: "Activo",
+                id: 1,
+            }
+        }
+
+        fetch(`http://${ipServer}/api/person/`, {
+            method: 'PUT',
+            headers: {
+                Accept: 'application/json',
+                "Authorization": `Bearer${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+
+        })
+            .then((response) => response.json())
+            .then(async (responseJson) => {
+                setisOpenAlertDelete(true)
+                getAll()
+                setObjectModify([])
+            })
     }
 
     const modify = async () => {
-        console.log(objectModify)
         setIsLoadingModify(true)
         setShowModal(false)
         await getToken()
-        fetch(`http://${ipServer}/api/client/`, {
+        fetch(`http://${ipServer}/api/person/`, {
             method: 'PUT',
             headers: {
                 Accept: 'application/json',
@@ -53,7 +99,6 @@ export default function Clientes() {
         })
             .then((response) => response.json())
             .then(async (responseJson) => {
-                console.log(responseJson)
                 setObjectModify([])
                 setIsOpenAlertModify(true)
                 getAll()
@@ -138,12 +183,11 @@ export default function Clientes() {
         await getToken()
         let registerData = {
             ...object,
-            typeClient: {
-                id: object.typeClient,
+            profession: {
+                id: object.profession,
             }
         }
-        console.log(registerData)
-        fetch(`http://${ipServer}/api/client/`, {
+        fetch(`http://${ipServer}/api/person/`, {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -228,7 +272,7 @@ export default function Clientes() {
         setisLoadingTable(true);
         await getToken()
 
-        fetch(`http://${ipServer}/api/client/`, {
+        fetch(`http://${ipServer}/api/person/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -239,19 +283,32 @@ export default function Clientes() {
             .then(async (responseJson) => {
                 let tempData = []
                 for (let i = 0; i < responseJson.data.length; i++) {
-                    let newData = [
-                        responseJson.data[i].id, `${responseJson.data[i].name} ${responseJson.data[i].surname} ${responseJson.data[i].secondSurname}`, responseJson.data[i].company, responseJson.data[i].typeClient.description
-                        , <ActionsButtons name={"info"} action={() => {
-                            setShowModalInfo(true)
-                            setObjectModify(responseJson.data[i])
-                        }} color={"white"} bgColor={"#17a2b8"} />,
-                        <ActionsButtons action={() => {
-                            setShowModal(true)
-                            setObjectModify(responseJson.data[i])
+                    if (responseJson.data[i].profession.description != "Directivo") {
+                        let newData = [
+                            responseJson.data[i].id, `${responseJson.data[i].name} ${responseJson.data[i].surname} ${responseJson.data[i].secondSurname}`, responseJson.data[i].email
+                            , <ActionsButtons name={"info"} action={() => {
+                                setShowModalInfo(true)
+                                setObjectModify(responseJson.data[i])
+                            }} color={"white"} bgColor={"#17a2b8"} />,
+                            <ActionsButtons action={() => {
+                                setShowModal(true)
+                                setObjectModify(responseJson.data[i])
 
-                        }} name={"edit"} color={"black"} bgColor={"#ffc107"} />
-                    ];
-                    await tempData.push(newData)
+                            }} name={"edit"} color={"black"} bgColor={"#ffc107"} />,
+                            responseJson.data[i].status.id == 1 ? <ActionsButtons name={"trash"} action={() => {
+                                setShowAlertDelete(true)
+                                setObjectModify(responseJson.data[i])
+                            }} color={"white"} bgColor={"#dc3545"} /> : <ActionsButtons name={"check-circle"} action={() => {
+                                setShowAlertEnable(true)
+                                setObjectModify(responseJson.data[i])
+                            }} color={"white"} bgColor={"#218838"} />
+                            
+                        ];
+                        await tempData.push(newData)
+
+                    }
+
+
                 }
                 await setData(tempData)
                 setisLoadingTable(false)
@@ -267,89 +324,59 @@ export default function Clientes() {
 
     return (
         <View>
-            {isOpenAlertDelete ? <AlertComponent isOpen={setisOpenAlertDelete} status={"success"} title={"Cliente eliminado correctamente"} /> : null}
-            {isOpenAlertRegister ? <AlertComponent isOpen={setIsOpenAlertRegister} status={"success"} title={"Cliente registrado correctamente"} /> : null}
+            {isOpenAlertDelete ? <AlertComponent isOpen={setisOpenAlertDelete} status={"success"} title={"Estado cambiado correctamente"} /> : null}
+            {isOpenAlertRegister ? <AlertComponent isOpen={setIsOpenAlertRegister} status={"success"} title={"Personal registrado correctamente"} /> : null}
             {isOpenAlertErrorRegister ? <AlertComponent isOpen={setIsOpenAlertErrorRegister} status={"error"} title={"Rellene todos los campos primero"} /> : null}
             <ScrollView _contentContainerStyle={{
                 minW: "100%"
             }}>
 
-                <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} action={register} isOpen={false} title={"Registrar clientes"} showIcon={true} Form={
+                <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} action={register} isOpen={false} title={"Registrar personal"} showIcon={true} Form={
 
-                    <Center>
-                        <BoxHeaderComponent fontColor={"#000"} bgColor={"#ffffff"} isButton={false} action={register} isOpen={false} title={"Datos del cliente"} showIcon={true} Form={
-                            <Stack mt={3} space={4} w="100%">
-                                <FormControl isRequired>
-                                    <FormControl.Label>Nombre</FormControl.Label>
-                                    <Input value={object.name} onChangeText={value => setObject({ ...object, ["name"]: value })} type='text' placeholder='Ejemplo: María' />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Primer apellido</FormControl.Label>
-                                    <Input value={object.surname} type='text' onChangeText={value => setObject({ ...object, ["surname"]: value })} placeholder='Ejemplo: Valdez' />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Segundo apellido</FormControl.Label>
-                                    <Input type='text' value={object.secondSurname} onChangeText={value => setObject({ ...object, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Nombre de la empresa</FormControl.Label>
-                                    <Input type='text' value={object.company} onChangeText={value => setObject({ ...object, ["company"]: value })} placeholder='Ejemplo: NISSAN' />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Teléfono</FormControl.Label>
-                                    <Input type='number' value={object.phoneClient} onChangeText={value => setObject({ ...object, ["phoneClient"]: value })} placeholder='Ejemplo: 7775698741' />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Correo electrónico</FormControl.Label>
-                                    <Input type='email' value={object.emailClient} onChangeText={value => setObject({ ...object, ["emailClient"]: value })} placeholder='Ejemplo: Email' />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Tipo de cliente</FormControl.Label>
-                                    <Select selectedValue={object.typeClient} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
-                                        bg: "teal.600",
-                                        endIcon: <CheckIcon size="5" />
-                                    }} mt={1} onValueChange={value => setObject({ ...object, ["typeClient"]: value })}>
-                                        <Select.Item label="Externo" value="1" />
-                                        <Select.Item label="Interno" value="2" />
-                                    </Select>
-                                </FormControl>
+                    <Stack mt={3} space={4} w="100%">
+                        <FormControl isRequired>
+                            <FormControl.Label>Nombre</FormControl.Label>
+                            <Input value={object.name} onChangeText={value => setObject({ ...object, ["name"]: value })} type='text' placeholder='Ejemplo: María' />
+                        </FormControl>
+                        <FormControl isRequired>
+                            <FormControl.Label>Primer apellido</FormControl.Label>
+                            <Input value={object.surname} type='text' onChangeText={value => setObject({ ...object, ["surname"]: value })} placeholder='Ejemplo: Valdez' />
+                        </FormControl>
+                        <FormControl isRequired>
+                            <FormControl.Label>Segundo apellido</FormControl.Label>
+                            <Input type='text' value={object.secondSurname} onChangeText={value => setObject({ ...object, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
+                        </FormControl>
+                        <FormControl isRequired>
+                            <FormControl.Label>Fecha de nacimiento</FormControl.Label>
+                            <Input type='date' value={object.dateBirth} onChangeText={value => setObject({ ...object, ["dateBirth"]: value })} placeholder='Ejemplo: 2002-06-21' />
+                        </FormControl>
+                        <FormControl isRequired>
+                            <FormControl.Label>Correo eléctronico</FormControl.Label>
+                            <Input type='email' value={object.email} onChangeText={value => setObject({ ...object, ["email"]: value })} placeholder='Ejemplo: Email' />
+                        </FormControl>
+                        <FormControl isRequired>
+                            <FormControl.Label>Teléfono</FormControl.Label>
+                            <Input type='number' value={object.phone} onChangeText={value => setObject({ ...object, ["phone"]: value })} placeholder='Ejemplo: 7775698741' />
+                        </FormControl>
+                        <FormControl isRequired>
+                            <FormControl.Label>Rol</FormControl.Label>
+                            <Select selectedValue={object.profession} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
+                                bg: "teal.600",
+                                endIcon: <CheckIcon size="5" />
+                            }} mt={1} onValueChange={value => setObject({ ...object, ["profession"]: value })}>
+                                <Select.Item label="Docente" value="1" />
+                                <Select.Item label="Becario" value="2" />
+                            </Select>
+                        </FormControl>
 
-                            </Stack>
-                        } />
-                        <BoxHeaderComponent fontColor={"#000"} bgColor={"#ffffff"} isButton={false} action={register} isOpen={false} title={"Datos del representante del cliente"} showIcon={true} Form={
-                            <Stack mt={3} space={4} w="100%">
-                                <FormControl isRequired>
-                                    <FormControl.Label>Nombre</FormControl.Label>
-                                    <Input value={object.nameRepre} onChangeText={value => setObject({ ...object, ["nameRepre"]: value })} type='text' placeholder='Ejemplo: María' />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Primer apellido</FormControl.Label>
-                                    <Input value={object.surnameRepre} type='text' onChangeText={value => setObject({ ...object, ["surnameRepre"]: value })} placeholder='Ejemplo: Valdez' />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Segundo apellido</FormControl.Label>
-                                    <Input type='text' value={object.secondSurnameRepre} onChangeText={value => setObject({ ...object, ["secondSurnameRepre"]: value })} placeholder='Ejemplo: Díaz' />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Teléfono</FormControl.Label>
-                                    <Input type='number' value={object.phoneRepre} onChangeText={value => setObject({ ...object, ["phoneRepre"]: value })} placeholder='Ejemplo: 771144520' />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Correo electrónico</FormControl.Label>
-                                    <Input type='email' value={object.emailRepre} onChangeText={value => setObject({ ...object, ["emailRepre"]: value })} placeholder='Ejemplo: utez@utez.edu.mx' />
-                                </FormControl>
-                                {isLoadingRegister ? <Loading /> : null}
-                            </Stack>
-                        } />
-
-                    </Center>
+                    </Stack>
 
 
                 } />
-                {isOpenAlertModify ? <AlertComponent isOpen={setIsOpenAlertModify} status={"success"} title={"Cliente modificado correctamente"} /> : null}
-                <TableComponent isLoadingTable={isLoadingTable} setisLoadingTable={setisLoadingTable} isOpen={true} title={"Clientes registrados"}
+                {isOpenAlertModify ? <AlertComponent isOpen={setIsOpenAlertModify} status={"success"} title={"Personal modificado correctamente"} /> : null}
+                <TableComponent isLoadingTable={isLoadingTable} setisLoadingTable={setisLoadingTable} isOpen={true} title={"Personal registrado"}
                     isSearch={true}
-                    tableHead={['#', 'Nombre completo', 'Nombre de la empresa', 'Tipo del cliente', 'Detalles', 'Modificar']}
+                    tableHead={['#', 'Nombre completo', 'Correo', 'Detalles', 'Modificar', 'Acción']}
                     widthArr={[40, 180, 200, 150, 120, 120]}
                     data={data}
                 />
@@ -359,33 +386,34 @@ export default function Clientes() {
                     {errorModify ? <AlertComponent isOpen={setErrorModify} status={"error"} title={"Rellene todos los campos primero"} /> : null}
                     {equalsPassword ? <AlertComponent isOpen={setEqualsPassword} status={"error"} title={"Las contraseñas no son iguales"} /> : null}
                     <FormControl isRequired>
-                        <FormControl.Label>Teléfono</FormControl.Label>
-                        <Input type='number' value={objectModify.phoneClient} onChangeText={value => setObjectModify({ ...objectModify, ["phoneClient"]: value })} placeholder='Ejemplo: 7771144520' />
-                    </FormControl>
-                    <FormControl isRequired>
-                        <FormControl.Label>Correo electrónico</FormControl.Label>
-                        <Input type='email' value={objectModify.emailClient} onChangeText={value => setObjectModify({ ...objectModify, ["emailClient"]: value })} placeholder='Ejemplo: Email' />
-                    </FormControl>
-                    <Text style={{ fontWeight: "bold" }}>Información del representante del cliente</Text>
-                    <FormControl isRequired>
                         <FormControl.Label>Nombre</FormControl.Label>
-                        <Input value={objectModify.nameRepre} onChangeText={value => setObjectModify({ ...objectModify, ["nameRepre"]: value })} type='text' placeholder='Ejemplo: María' />
+                        <Input value={objectModify.name} onChangeText={value => setObjectModify({ ...objectModify, ["name"]: value })} type='text' placeholder='Ejemplo: María' />
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Primer apellido</FormControl.Label>
-                        <Input value={objectModify.surnameRepre} type='text' onChangeText={value => setObjectModify({ ...objectModify, ["surnameRepre"]: value })} placeholder='Ejemplo: Valdez' />
+                        <Input value={objectModify.surname} type='text' onChangeText={value => setObjectModify({ ...objectModify, ["surname"]: value })} placeholder='Ejemplo: Valdez' />
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Segundo apellido</FormControl.Label>
-                        <Input type='text' value={objectModify.secondSurnameRepre} onChangeText={value => setObjectModify({ ...objectModify, ["secondSurnameRepre"]: value })} placeholder='Ejemplo: Díaz' />
+                        <Input type='text' value={objectModify.secondSurname} onChangeText={value => setObjectModify({ ...objectModify, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
+                    </FormControl>
+                    <FormControl isRequired>
+                        <FormControl.Label>Fecha de nacimiento</FormControl.Label>
+                        <Input type='date' value={objectModify.dateBirth} onChangeText={value => setObjectModify({ ...objectModify, ["dateBirth"]: value })} placeholder='Ejemplo: 2002-06-21' />
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Teléfono</FormControl.Label>
-                        <Input type='number' value={objectModify.phoneRepre} onChangeText={value => setObjectModify({ ...objectModify, ["phoneRepre"]: value })} placeholder='Ejemplo: 7771144520' />
+                        <Input type='number' value={objectModify.phone} onChangeText={value => setObjectModify({ ...objectModify, ["phone"]: value })} placeholder='Ejemplo: 7775698741' />
                     </FormControl>
                     <FormControl isRequired>
-                        <FormControl.Label>Correo electrónico</FormControl.Label>
-                        <Input type='email' value={objectModify.emailRepre} onChangeText={value => setObjectModify({ ...objectModify, ["emailRepre"]: value })} placeholder='Ejemplo: utez@utez.edu.mx' />
+                        <FormControl.Label>Rol</FormControl.Label>
+                        <Select selectedValue={showModal ? `${objectModify.profession.id}` : ""} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
+                            bg: "teal.600",
+                            endIcon: <CheckIcon size="5" />
+                        }} mt={1} onValueChange={value => setObjectModify({ ...objectModify, "profession": { ...objectModify.profession, "id": value } })}>
+                            <Select.Item label="Docente" value="1" />
+                            <Select.Item label="Becario" value="2" />
+                        </Select>
                     </FormControl>
                     {isLoadingModify ? <Loading /> : null}
                 </Modal.Body>
@@ -393,38 +421,40 @@ export default function Clientes() {
             <ModalComponent showButtonConfirm={true} action={modify} content={
                 <Modal.Body>
                     <FormControl isDisabled isRequired>
-                        <FormControl.Label>Teléfono</FormControl.Label>
-                        <Input type='number' value={objectModify.phoneClient} onChangeText={value => setObjectModify({ ...objectModify, ["phoneClient"]: value })} placeholder='Ejemplo: 7771144520' />
-                    </FormControl>
-                    <FormControl isDisabled isRequired>
-                        <FormControl.Label>Correo electrónico</FormControl.Label>
-                        <Input type='email' value={objectModify.emailClient} onChangeText={value => setObjectModify({ ...objectModify, ["emailClient"]: value })} placeholder='Ejemplo: Email' />
-                    </FormControl>
-                    <Text style={{ fontWeight: "bold" }}>Información del representante del cliente</Text>
-                    <FormControl isDisabled isRequired>
                         <FormControl.Label>Nombre</FormControl.Label>
-                        <Input value={objectModify.nameRepre} onChangeText={value => setObjectModify({ ...objectModify, ["nameRepre"]: value })} type='text' placeholder='Ejemplo: María' />
+                        <Input value={objectModify.name} onChangeText={value => setObjectModify({ ...objectModify, ["name"]: value })} type='text' placeholder='Ejemplo: María' />
                     </FormControl>
-                    <FormControl isRequired isDisabled>
+                    <FormControl isDisabled isRequired>
                         <FormControl.Label>Primer apellido</FormControl.Label>
-                        <Input value={objectModify.surnameRepre} type='text' onChangeText={value => setObjectModify({ ...objectModify, ["surnameRepre"]: value })} placeholder='Ejemplo: Valdez' />
+                        <Input value={objectModify.surname} type='text' onChangeText={value => setObjectModify({ ...objectModify, ["surname"]: value })} placeholder='Ejemplo: Valdez' />
                     </FormControl>
                     <FormControl isDisabled isRequired>
                         <FormControl.Label>Segundo apellido</FormControl.Label>
-                        <Input type='text' value={objectModify.secondSurnameRepre} onChangeText={value => setObjectModify({ ...objectModify, ["secondSurnameRepre"]: value })} placeholder='Ejemplo: Díaz' />
+                        <Input type='text' value={objectModify.secondSurname} onChangeText={value => setObjectModify({ ...objectModify, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
+                    </FormControl>
+                    <FormControl isDisabled isRequired>
+                        <FormControl.Label>Fecha de nacimiento</FormControl.Label>
+                        <Input type='date' value={objectModify.dateBirth} onChangeText={value => setObjectModify({ ...objectModify, ["dateBirth"]: value })} placeholder='Ejemplo: 2002-06-21' />
                     </FormControl>
                     <FormControl isDisabled isRequired>
                         <FormControl.Label>Teléfono</FormControl.Label>
-                        <Input type='number' value={objectModify.phoneRepre} onChangeText={value => setObjectModify({ ...objectModify, ["phoneRepre"]: value })} placeholder='Ejemplo: 7771144520' />
+                        <Input type='number' value={objectModify.phone} onChangeText={value => setObjectModify({ ...objectModify, ["phone"]: value })} placeholder='Ejemplo: 7775698741' />
                     </FormControl>
                     <FormControl isDisabled isRequired>
-                        <FormControl.Label>Correo electrónico</FormControl.Label>
-                        <Input type='email' value={objectModify.emailRepre} onChangeText={value => setObjectModify({ ...objectModify, ["emailRepre"]: value })} placeholder='Ejemplo: utez@utez.edu.mx' />
+                        <FormControl.Label>Rol</FormControl.Label>
+                        <Select selectedValue={showModalInfo ? `${objectModify.profession.id}` : ""} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
+                            bg: "teal.600",
+                            endIcon: <CheckIcon size="5" />
+                        }} mt={1} onValueChange={value => setObjectModify({ ...objectModify, "profession": { ...objectModify.profession, "id": value } })}>
+                            <Select.Item label="Docente" value="1" />
+                            <Select.Item label="Becario" value="2" />
+                        </Select>
                     </FormControl>
                     {isLoadingModify ? <Loading /> : null}
                 </Modal.Body>
-            } showModal={showModalInfo} header={"Detalles del cliente"} setShowModal={setShowModalInfo} />
-
+            } showModal={showModalInfo} header={"Detalles del personal"} setShowModal={setShowModalInfo} />
+            <AlertDialogComponent isOpen={showAlertDelete} setIsOpen={setShowAlertDelete} header={"Desactivar personal"} body={"Se desactivará el personal"} action={onDelete} />
+            <EnableAlertDialogComponent isOpen={showAlertEnable} setIsOpen={setShowAlertEnable} header={"Activar personal"} body={"Se activará el personal"} action={onEnable} />
         </View>
     )
 }

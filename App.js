@@ -37,6 +37,7 @@ import ForgotPassword from './src/screens/Modulo1/ForgotPassword';
 import Dashboard from './src/screens/Dashboard';
 import AltaDireccion from './src/screens/AltaDireccion';
 import Clientes from './src/screens/Clientes';
+import Personal from './src/screens/Personal';
 export default function App({ navigation }) {
 
   const [state, dispatch] = React.useReducer(
@@ -129,19 +130,22 @@ export default function App({ navigation }) {
         return state.directivo
       },
       setRoles: async(directivo, coordinador, rape, rd) => {
-        if (coordinador == true) {
-          dispatch({ type: 'COORDINADOR', enable: true });
-          dispatch({ type: 'ROL_ACTIVE', rol: "COORDINADOR" });
-        } else if (rape == true) {
+        if (rape == true) {
           dispatch({ type: 'RAPE', enable: true });
           dispatch({ type: 'ROL_ACTIVE', rol: "RAPE" });
-        } else if (rd == true) {
+        } 
+        if(rd == true) {
           dispatch({ type: 'RD', enable: true });
           dispatch({ type: 'ROL_ACTIVE', rol: "RD" });
-        } else if (directivo == true) {
+        } 
+        if (directivo == true) {
           dispatch({ type: 'DIRECTIVO', enable: true });
           dispatch({ type: 'ROL_ACTIVE', rol: "DIRECTIVO" });
         }
+        if (coordinador == true) {
+          dispatch({ type: 'COORDINADOR', enable: true });
+          dispatch({ type: 'ROL_ACTIVE', rol: "COORDINADOR" });
+        } 
       },
       setRoleActive: (rol) => {
         dispatch({ type: 'ROL_ACTIVE', rol: rol });
@@ -152,12 +156,6 @@ export default function App({ navigation }) {
   );
 
     React.useEffect(() => {
-      dispatch({ type: 'SIGN_OUT', token: null })
-        dispatch({ type: 'DIRECTIVO', enable: null })
-        dispatch({ type: 'RD', enable: null })
-        dispatch({ type: 'RAPE', enable: null })
-        dispatch({ type: 'COORDINADOR', enable: null })
-        dispatch({ type: 'ROL_ACTIVE', rol: null })
     }, [])
   
   return (
@@ -197,6 +195,7 @@ export default function App({ navigation }) {
                   <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
                   <Drawer.Screen name="direction" options={{ title: "Gestión de usuarios de alta dirección" }} component={AltaDireccion} />
                   <Drawer.Screen name="clients" options={{ title: "Gestión de clientes" }} component={Clientes} />
+                  <Drawer.Screen name="personal" options={{ title: "Gestión de personal" }} component={Personal} />
                 </Drawer.Navigator>
                 : state.rolSign == "DIRECTIVO" ?
                   <Drawer.Navigator initialRouteName='dashboard'>
