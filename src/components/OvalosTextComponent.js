@@ -3,8 +3,10 @@ import React from 'react'
 import { Badge } from "native-base";
 
 export default function OvalosTextComponent(props) {
-  const {text, colorScheme } = props;
+  const {text, colorB } = props;
   return (
-    <Badge  colorScheme={colorScheme}>{text}</Badge>
+    <Badge bg={colorB} _text={{
+      color:"#fff"
+    }}>{text}</Badge>
   )
 }

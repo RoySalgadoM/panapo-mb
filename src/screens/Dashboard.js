@@ -104,14 +104,14 @@ export default function Dashboard(props) {
           widthArr={[40, 120, 200, 120, 120]}
           data={[['1', 'TREMO',
             <ProgressBarComponent progress={55} text={"77% Completado"} />
-            , <OvalosTextComponent text={"Activo"} colorScheme={"success"} />, <OvalosTextComponent text={"Alta"} colorScheme={"danger"} />]]}
+            , <OvalosTextComponent text={"Activo"} colorB={"#28a745"} />, <OvalosTextComponent text={"Alta"} colorScheme={"danger"} />]]}
         />
         <TableComponent isOpen={true} title={"Proyectos"} showIcon={true}
           tableHead={['#', 'Identificador', 'Avance real del proyecto', 'Etapa', 'Prioridad']}
           widthArr={[40, 120, 200, 120, 120]}
           data={[['1', 'TREMO',
             <ProgressBarComponent progress={55} text={"77% Completado"} />
-            , <OvalosTextComponent text={"Activo"} colorScheme={"success"} />, <OvalosTextComponent text={"Alta"} colorScheme={"danger"} />]]}
+            , <OvalosTextComponent text={"Activo"} colorB={"#28a745"} />, <OvalosTextComponent text={"Alta"} colorScheme={"danger"} />]]}
         />
         
       </ScrollView>

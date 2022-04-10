@@ -2,11 +2,13 @@ import React from 'react'
 import { Center, Modal, FormControl, Input, Button, Text } from 'native-base';
 
 export default function ModalComponent(props) {
-    const { showModal, setShowModal, content, header, action, showButtonConfirm } = props;
+    const { showModal, setShowModal, content, header, formik, showButtonConfirm } = props;
 
     return (
         <Center>
-            <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+            <Modal isOpen={showModal} onClose={() => {
+                setShowModal(false)
+            }}>
                 <Modal.Content maxWidth="400px">
                     <Modal.Header bg={"#042B61"}><Text color={"white"}>{header}</Text></Modal.Header>
                     <Modal.Body>
@@ -19,7 +21,7 @@ export default function ModalComponent(props) {
                             }}>
                                 <Text color={"white"}>Cancelar</Text>
                             </Button>
-                            {showButtonConfirm ? <Text></Text> : <Button bg={"#042B61"} onPress={action}>
+                            {showButtonConfirm ? <Text></Text> : <Button bg={"#042B61"} onPress={formik.handleSubmit}>
                                 <Text color={"white"}>Confirmar</Text>
                             </Button>}
                             

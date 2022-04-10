@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loading from './src/components/Loading';
 import { AuthContext } from './src/config/AuthContext';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-
+import { LogBox } from 'react-native';
 import {
   Text,
   Link,
@@ -111,11 +111,13 @@ export default function App({ navigation }) {
 
   const authContext = React.useMemo(
     () => ({
-      signIn: async (token) => {
-        dispatch({ type: 'SIGN_IN', token: token });
+      signIn: async (data) => {
+        console.log(data.token)
+        console.log(data.user.username)
+        dispatch({ type: 'SIGN_IN', token: data.token });
         try {
-          await AsyncStorage.setItem('token',token)
-
+          await AsyncStorage.setItem('token',data.token)
+          await AsyncStorage.setItem('username',data.user.username)
       } catch (e) {
           console.log(e)
           // error reading value
@@ -128,6 +130,13 @@ export default function App({ navigation }) {
         dispatch({ type: 'RAPE', enable: null })
         dispatch({ type: 'COORDINADOR', enable: null })
         dispatch({ type: 'ROL_ACTIVE', rol: null })
+        try {
+          await AsyncStorage.removeItem('token')
+          await AsyncStorage.removeItem('username')
+      } catch (e) {
+          console.log(e)
+          // error reading value
+      }
       },
       getRoles: () => {
         return state.directivo
@@ -160,7 +169,8 @@ export default function App({ navigation }) {
 
     React.useEffect(() => {
     }, [])
-  
+    LogBox.ignoreLogs(['Warning: ...']); //Hide warnings
+
   return (
     <NativeBaseProvider>
       <AuthContext.Provider value={authContext}>

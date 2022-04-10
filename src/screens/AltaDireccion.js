@@ -1,7 +1,7 @@
 import { View } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import TableComponent from '../components/TableComponent'
-import { Center, ScrollView, Input, Stack, FormControl, WarningOutlineIcon, Modal } from "native-base";
+import { Center, ScrollView, Input, Stack, FormControl, WarningOutlineIcon, Modal, Text, Button } from "native-base";
 import BoxHeaderComponent from '../components/BoxHeaderComponent'
 import ActionsButtons from '../components/ActionsButtons'
 import ModalComponent from '../components/ModalComponent'
@@ -10,14 +10,15 @@ import AlertComponent from '../components/AlertComponent'
 import { ipServer } from "../config/Config"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loading from '../components/Loading';
-
+import * as yup from "yup";
+import { useFormik } from "formik";
+import { LogBox } from 'react-native';
 export default function AltaDireccion() {
     const [showModal, setShowModal] = useState(false);
     const [showAlertDelete, setShowAlertDelete] = useState(false);
     const [isOpenAlertDelete, setisOpenAlertDelete] = useState(false)
     const [isOpenAlertRegister, setIsOpenAlertRegister] = useState(false)
     const [isOpenAlertModify, setIsOpenAlertModify] = useState(false)
-    const [isOpenAlertErrorRegister, setIsOpenAlertErrorRegister] = useState(false)
     const [data, setData] = useState([])
     const [isLoadingTable, setisLoadingTable] = useState(true)
     const [object, setObject] = useState([])
@@ -26,115 +27,29 @@ export default function AltaDireccion() {
     const [isLoadingModify, setIsLoadingModify] = useState(false)
     const [errorModify, setErrorModify] = useState(false)
     const [equalsPassword, setEqualsPassword] = useState(false)
-
-    const [filterText, setFilterText] = useState("");
-
-    let token = ""
-    const onDelete = () => {
-        console.log(object.id)
-        fetch(`http://${ipServer}/api/user/` + object.id, {
-                    method: 'DELETE',
-                    headers: {
-                        Accept: 'application/json',
-                        "Authorization": `Bearer${token}`,
-                        'Content-Type': 'application/json',
-                    },
-
-                })
-                    .then((response) => response.json())
-                    .then(async (responseJson) => {
-                        console.log(responseJson)
-                        setObject([])
-                        setisOpenAlertDelete(true)
-                        getAll()
-                        setIsLoadingModify(false)
-                    })
-                setIsLoadingModify(false)
-    }
-    
-    const modify = async () => {
-        await getToken()
-        console.log(objectModify)
-        if (objectModify.person.hasOwnProperty('name') && objectModify.person.hasOwnProperty('surname') && objectModify.person.hasOwnProperty('secondSurname') && objectModify.hasOwnProperty('password') && objectModify.hasOwnProperty('confirmPassword')) {
-
-            if (objectModify.person.name === "" || objectModify.person.surname == "" || objectModify.person.secondSurname == "") {
-                setErrorModify(true)
-            } else if (objectModify.password === objectModify.confirmPassword) {
-                setEqualsPassword(false)
-                setIsLoadingModify(true)
-                setErrorModify(false)
-                setShowModal(false)
-                fetch(`http://${ipServer}/api/user/update`, {
-                    method: 'PUT',
-                    headers: {
-                        Accept: 'application/json',
-                        "Authorization": `Bearer${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(objectModify),
-
-                })
-                    .then((response) => response.json())
-                    .then(async (responseJson) => {
-                        setObjectModify([])
-                        setIsOpenAlertModify(true)
-                        getAll()
-                        setIsLoadingModify(false)
-                    })
-                setIsLoadingModify(false)
-
-            } else {
-                setEqualsPassword(true)
-            }
-
-
-        } else if (objectModify.person.hasOwnProperty('name') && objectModify.person.hasOwnProperty('surname') && objectModify.person.hasOwnProperty('secondSurname') && objectModify.hasOwnProperty('password')) {
-            setErrorModify(true)
-        }
-        else if (objectModify.person.hasOwnProperty('name') && objectModify.person.hasOwnProperty('surname') && objectModify.person.hasOwnProperty('secondSurname')) {
-            if (objectModify.person.name === "" || objectModify.person.surname == "" || objectModify.person.secondSurname == "") {
-                setErrorModify(true)
-            } else {
-                setIsLoadingModify(true)
-                setEqualsPassword(false)
-                setErrorModify(false)
-                setShowModal(false)
-                fetch(`http://${ipServer}/api/person/`, {
-                    method: 'PUT',
-                    headers: {
-                        Accept: 'application/json',
-                        "Authorization": `Bearer${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(objectModify.person),
-
-                })
-                    .then((response) => response.json())
-                    .then(async (responseJson) => {
-                        setObjectModify([])
-                        setIsOpenAlertModify(true)
-                        getAll()
-                        setIsLoadingModify(false)
-                    })
-            }
-
-        } else {
-            console.log("error")
-        }
-    }
-    const register = () => {
-        if (object.hasOwnProperty('name') && object.hasOwnProperty('surname') && object.hasOwnProperty('secondSurname') && object.hasOwnProperty('email')) {
-
-            setIsOpenAlertErrorRegister(false)
-
+    LogBox.ignoreLogs(['Warning: ...']); //Hide warnings
+    const formikRegister = useFormik({
+        initialValues: {
+            name: "",
+            surname: "",
+            secondSurname: "",
+            email: ""
+        },
+        validationSchema: yup.object().shape({
+            email: yup.string().required("Campo obligatorio"),
+            name: yup.string().required("Campo obligatorio"),
+            surname: yup.string().required("Campo obligatorio"),
+            secondSurname: yup.string().required("Campo obligatorio")
+        }),
+        onSubmit: (values) => {
             setIsLoadingRegister(true)
             let registerData = {
-                "password": object.email,
+                "password": values.email,
                 "person": {
-                    "name": object.name,
-                    "surname": object.surname,
-                    "secondSurname": object.secondSurname,
-                    "email": object.email,
+                    "name": values.name,
+                    "surname": values.surname,
+                    "secondSurname": values.secondSurname,
+                    "email": values.email,
                     "profession": {
                         "id": 3,
                         "description": "Directivo"
@@ -170,15 +85,122 @@ export default function AltaDireccion() {
                     setObject([])
                     setIsOpenAlertRegister(true)
                     getAll()
+                    formikRegister.resetForm();
                     setIsLoadingRegister(false)
                 })
+        },
+    });
 
-        } else {
-            setIsLoadingRegister(false)
-            setIsOpenAlertRegister(false)
-            setIsOpenAlertErrorRegister(true)
+    const formikModify = useFormik({
+        initialValues: {
+            name: "",
+            surname: "",
+            secondSurname: "",
+            password: "",
+            confirmPassword: ""
+        },
+        validationSchema: yup.object().shape({
+            name: yup.string().required("Campo obligatorio"),
+            surname: yup.string().required("Campo obligatorio"),
+            secondSurname: yup.string().required("Campo obligatorio")
+        }),
+        onSubmit: async(values) => {
+            await getToken()
+            let dataPerson={
+                ...objectModify,
+                person:{
+                    ...objectModify.person,
+                    name: values.name,
+                    surname: values.surname,
+                    secondSurname:values.secondSurname
+                }
+            }
+            setObjectModify(dataPerson)
+            if (values.password != "" && values.confirmPassword != "") {
+                if (values.password === values.confirmPassword) {
+                    setEqualsPassword(false)
+                    setIsLoadingModify(true)
+                    setErrorModify(false)
+                    setShowModal(false)
+
+                    let data ={
+                        ...dataPerson,
+                        password:values.password
+                    }
+                    fetch(`http://${ipServer}/api/user/update`, {
+                        method: 'PUT',
+                        headers: {
+                            Accept: 'application/json',
+                            "Authorization": `Bearer${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data),
+
+                    })
+                        .then((response) => response.json())
+                        .then(async (responseJson) => {
+                            console.log(data)
+                        console.log(responseJson)
+                            setObjectModify([])
+                            setIsOpenAlertModify(true)
+                            getAll()
+                            setIsLoadingModify(false)
+                        })
+                    setIsLoadingModify(false)
+                } else {
+                    setEqualsPassword(true)
+                }
+
+
+            } else {
+                setIsLoadingModify(true)
+                setEqualsPassword(false)
+                setErrorModify(false)
+                setShowModal(false)
+                fetch(`http://${ipServer}/api/person/`, {
+                    method: 'PUT',
+                    headers: {
+                        Accept: 'application/json',
+                        "Authorization": `Bearer${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dataPerson.person),
+
+                })
+                    .then((response) => response.json())
+                    .then(async (responseJson) => {
+                        console.log(dataPerson.person)
+                        console.log(responseJson)
+                        setObjectModify([])
+                        setIsOpenAlertModify(true)
+                        getAll()
+                        setIsLoadingModify(false)
+                    })
+            }
         }
+    });
+
+    let token = ""
+    const onDelete = () => {
+        fetch(`http://${ipServer}/api/user/` + object.id, {
+            method: 'DELETE',
+            headers: {
+                Accept: 'application/json',
+                "Authorization": `Bearer${token}`,
+                'Content-Type': 'application/json',
+            },
+
+        })
+            .then((response) => response.json())
+            .then(async (responseJson) => {
+                setObject([])
+                setisOpenAlertDelete(true)
+                getAll()
+                setIsLoadingModify(false)
+            })
+        setIsLoadingModify(false)
     }
+
 
 
     const getToken = async () => {
@@ -213,7 +235,11 @@ export default function AltaDireccion() {
                                 , <ActionsButtons action={() => {
                                     setShowModal(true)
                                     setObjectModify(responseJson.data[i])
-
+                                    formikModify.resetForm
+                                    formikModify.values.name = responseJson.data[i].person.name
+                                    formikModify.values.surname = responseJson.data[i].person.surname
+                                    formikModify.values.secondSurname = responseJson.data[i].person.secondSurname
+                                    formikModify.handleChange
                                 }} name={"edit"} color={"black"} bgColor={"#ffc107"} />, <ActionsButtons name={"trash"} action={() => {
                                     setShowAlertDelete(true)
                                     setObject({
@@ -242,29 +268,59 @@ export default function AltaDireccion() {
         <View>
             {isOpenAlertDelete ? <AlertComponent isOpen={setisOpenAlertDelete} status={"success"} title={"Directivo eliminado correctamente"} /> : null}
             {isOpenAlertRegister ? <AlertComponent isOpen={setIsOpenAlertRegister} status={"success"} title={"Directivo registrado correctamente"} /> : null}
-            {isOpenAlertErrorRegister ? <AlertComponent isOpen={setIsOpenAlertErrorRegister} status={"error"} title={"Rellene todos los campos primero"} /> : null}
             <ScrollView _contentContainerStyle={{
                 minW: "100%"
             }}>
-                <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} action={register} isOpen={false} title={"Registrar directivo"} showIcon={true} Form={
+                <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} isOpen={false} title={"Registrar directivo"} showIcon={true} Form={
                     <Center>
                         <Stack mt={3} space={4} w="100%">
                             <FormControl isRequired>
                                 <FormControl.Label>Nombre</FormControl.Label>
-                                <Input value={object.name} onChangeText={value => setObject({ ...object, ["name"]: value })} type='text' placeholder='Ejemplo: María' />
+                                <Input
+                                    onChangeText={formikRegister.handleChange('name')}
+                                    onBlur={formikRegister.handleBlur('name')}
+                                    value={formikRegister.values.name} type='text'
+                                    placeholder='Ejemplo: María' />
+                                {formikRegister.errors.name ? (
+                                    <Text color={"#FF0000"}>{formikRegister.errors.name}</Text>
+                                ) : null}
                             </FormControl>
                             <FormControl isRequired>
                                 <FormControl.Label>Primer apellido</FormControl.Label>
-                                <Input value={object.surname} type='text' onChangeText={value => setObject({ ...object, ["surname"]: value })} placeholder='Ejemplo: Valdez' />
+                                <Input
+                                    onChangeText={formikRegister.handleChange('surname')}
+                                    onBlur={formikRegister.handleBlur('surname')}
+                                    value={formikRegister.values.surname} type='text'
+                                    placeholder='Ejemplo: Valdez' />
+                                {formikRegister.errors.surname ? (
+                                    <Text color={"#FF0000"}>{formikRegister.errors.surname}</Text>
+                                ) : null}
                             </FormControl>
                             <FormControl isRequired>
                                 <FormControl.Label>Segundo apellido</FormControl.Label>
-                                <Input type='text' value={object.secondSurname} onChangeText={value => setObject({ ...object, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
+                                <Input type='text'
+                                    onChangeText={formikRegister.handleChange('secondSurname')}
+                                    onBlur={formikRegister.handleBlur('secondSurname')}
+                                    value={formikRegister.values.secondSurname}
+                                    placeholder='Ejemplo: Díaz' />
+                                {formikRegister.errors.secondSurname ? (
+                                    <Text color={"#FF0000"}>{formikRegister.errors.secondSurname}</Text>
+                                ) : null}
                             </FormControl>
                             <FormControl isRequired>
                                 <FormControl.Label>Correo electrónico</FormControl.Label>
-                                <Input type='email' value={object.email} onChangeText={value => setObject({ ...object, ["email"]: value })} placeholder='Ejemplo: utez@utez.edu.mx' />
+                                <Input type='email'
+                                    onChangeText={formikRegister.handleChange('email')}
+                                    onBlur={formikRegister.handleBlur('email')}
+                                    value={formikRegister.values.email}
+                                    placeholder='Ejemplo: utez@utez.edu.mx' />
+                                {formikRegister.errors.email ? (
+                                    <Text color={"#FF0000"}>{formikRegister.errors.email}</Text>
+                                ) : null}
                             </FormControl>
+                            <Button onPress={formikRegister.handleSubmit} disabled={!(formikRegister.isValid && formikRegister.dirty)} mt="4" bg="#042b61" >
+                                Registrar
+                            </Button>
                             {isLoadingRegister ? <Loading /> : null}
                         </Stack>
                     </Center>
@@ -279,28 +335,50 @@ export default function AltaDireccion() {
                     data={data}
                 />
             </ScrollView>
-            <ModalComponent action={modify} content={
+            <ModalComponent formik={formikModify} content={
                 <Modal.Body>
                     {errorModify ? <AlertComponent isOpen={setErrorModify} status={"error"} title={"Rellene todos los campos primero"} /> : null}
                     {equalsPassword ? <AlertComponent isOpen={setEqualsPassword} status={"error"} title={"Las contraseñas no son iguales"} /> : null}
                     <FormControl isRequired>
                         <FormControl.Label>Nombre</FormControl.Label>
-                        <Input type='text' value={showModal ? objectModify.person.name : ""} onChangeText={value => setObjectModify({ ...objectModify, "person": { ...objectModify.person, "name": value } })} placeholder='Ejemplo: María' />
-                        <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                            Something is wrong.
-                        </FormControl.ErrorMessage>
+                        <Input type='text'
+                            onChangeText={formikModify.handleChange('name')}
+                            onBlur={formikModify.handleBlur('name')}
+                            value={formikModify.values.name}
+                            placeholder='Ejemplo: María' />
+                        {formikModify.errors.name ? (
+                            <Text color={"#FF0000"}>{formikModify.errors.name}</Text>
+                        ) : null}
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Primer apellido</FormControl.Label>
-                        <Input type='text' value={showModal ? objectModify.person.surname : ""} onChangeText={value => setObjectModify({ ...objectModify, "person": { ...objectModify.person, "surname": value } })} placeholder='Ejemplo: Valdez' />
+                        <Input type='text'
+                            onChangeText={formikModify.handleChange('surname')}
+                            onBlur={formikModify.handleBlur('surname')}
+                            value={formikModify.values.surname}
+                            placeholder='Ejemplo: Valdez' />
+                        {formikModify.errors.surname ? (
+                            <Text color={"#FF0000"}>{formikModify.errors.surname}</Text>
+                        ) : null}
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Segundo apellido</FormControl.Label>
-                        <Input type='text' value={showModal ? objectModify.person.secondSurname : ""} onChangeText={value => setObjectModify({ ...objectModify, "person": { ...objectModify.person, "secondSurname": value } })} placeholder='Ejemplo: Díaz' />
+                        <Input type='text'
+                            onChangeText={formikModify.handleChange('secondSurname')}
+                            onBlur={formikModify.handleBlur('secondSurname')}
+                            value={formikModify.values.secondSurname}
+                            placeholder='Ejemplo: Díaz' />
+                        {formikModify.errors.secondSurname ? (
+                            <Text color={"#FF0000"}>{formikModify.errors.secondSurname}</Text>
+                        ) : null}
                     </FormControl>
                     <FormControl>
                         <FormControl.Label>Contraseña</FormControl.Label>
-                        <Input value={objectModify.password} onChangeText={value => setObjectModify({ ...objectModify, ["password"]: value })} type='password' placeholder='************' />
+                        <Input
+                            onChangeText={formikModify.handleChange('password')}
+                            onBlur={formikModify.handleBlur('password')}
+                            value={formikModify.values.password}
+                            type='password' placeholder='************' />
                         <FormControl.HelperText>
                             La contraseña solo se cambiara si ingresa algún valor
                         </FormControl.HelperText>
@@ -308,7 +386,11 @@ export default function AltaDireccion() {
 
                     <FormControl>
                         <FormControl.Label>Confirmar contraseña</FormControl.Label>
-                        <Input type='password' value={objectModify.confirmPassword} onChangeText={value => setObjectModify({ ...objectModify, ["confirmPassword"]: value })} placeholder='************' />
+                        <Input
+                            onChangeText={formikModify.handleChange('confirmPassword')}
+                            onBlur={formikModify.handleBlur('confirmPassword')}
+                            value={formikModify.values.confirmPassword}
+                            placeholder='************' type='password'/>
                     </FormControl>
                     {isLoadingModify ? <Loading /> : null}
                 </Modal.Body>

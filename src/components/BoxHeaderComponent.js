@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { Flex, Box, PresenceTransition, IconButton, MinusIcon, AddIcon, Button } from "native-base";
 
 export default function BoxHeaderComponent(props) {
-    const { title, showIcon, Form, isOpen, action, isButton,bgColor, fontColor } = props;
+    const { title, showIcon, Form, isOpen,bgColor, fontColor } = props;
     const [isShow, setIsShow] = useState(isOpen)
     const change = () => {
         setIsShow(!isShow)
@@ -74,9 +74,7 @@ export default function BoxHeaderComponent(props) {
                         color: "black"
                     }}>
                         {Form}
-                        {isButton?<Button onPress={action} mt="4" bg="#042b61" >
-                            Registrar
-                        </Button>:null}
+                       
                         
                     </Box>
                 </PresenceTransition>

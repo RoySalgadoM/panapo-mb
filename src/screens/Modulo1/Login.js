@@ -1,26 +1,33 @@
-import {StyleSheet } from 'react-native'
+import { StyleSheet } from 'react-native'
 import React, { useState, } from 'react'
-import { Center, Heading, Box, VStack, Image, FormControl, Input, Link, HStack, Button } from "native-base";
+import { Center, Heading, Box, VStack, Image, FormControl, Input, Link, HStack, Button, Text } from "native-base";
 import STYLES from '../../styles';
 import AlertComponent from "../../components/AlertComponent"
 import { ipServer } from "../../config/Config"
 import Loading from '../../components/Loading';
 import { AuthContext } from '../../config/AuthContext';
+import * as yup from "yup";
+import { useFormik } from "formik";
+
 export default function Login(props) {
   const { logged, setLogged } = props;
   const [dataLogin, setDataLogin] = useState([]);
   const [errorAlert, setErrorAlert] = useState(false)
   const { signIn, getRoles, setRoles } = React.useContext(AuthContext);
-  
+
   const [errorAlertBlank, setErrorAlertBlank] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const goToForgot = () => {
-    props.navigation.navigate("forgotPassword")
-  }
-
-  const goToDashboard = async () => {
-    if (dataLogin.hasOwnProperty('password') && dataLogin.hasOwnProperty('username')) {
+  const formik = useFormik({
+    initialValues: {
+      password: "",
+      username: ""
+    },
+    validationSchema: yup.object().shape({
+      password: yup.string().required("Campo obligatorio"),
+      username: yup.string().required("Campo obligatorio")
+    }),
+    onSubmit: (values) => {
       setIsLoading(true)
       fetch(`http://${ipServer}/api/auth/login`, {
         method: 'POST',
@@ -28,32 +35,32 @@ export default function Login(props) {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(dataLogin),
+        body: JSON.stringify(values),
 
       })
         .then((response) => response.json())
         .then(async (responseJson) => {
-          signIn(responseJson.data.token)
-
+          formik.resetForm();
+          signIn(responseJson.data)
           let authorities = responseJson.data.user.authorities;
-          let directivo, coordinador, rape,rd;
+          let directivo, coordinador, rape, rd;
           for (let i = 0; i < authorities.length; i++) {
             if (authorities[i].authority === "Coordinador") {
-              coordinador =true;
-            } 
-            if (authorities[i].authority =="RAPE") {
+              coordinador = true;
+            }
+            if (authorities[i].authority == "RAPE") {
               rape = true;
-            } 
+            }
             if (authorities[i].authority === "RD") {
-              rd=true;
+              rd = true;
             }
-             if (authorities[i].authority === "Directivo") {
-              directivo=true;
+            if (authorities[i].authority === "Directivo") {
+              directivo = true;
             }
-            
+
           }
-          console.log(directivo)
-          setRoles(directivo,coordinador,rape,rd)
+          formik.resetForm();
+          setRoles(directivo, coordinador, rape, rd)
           setIsLoading(false)
         })
         .catch((error) => {
@@ -61,10 +68,12 @@ export default function Login(props) {
           setIsLoading(false)
           setErrorAlertBlank(false)
         });
-    } else {
-      setErrorAlertBlank(true)
-    }
+    },
+  });
+  const goToForgot = () => {
+    props.navigation.navigate("forgotPassword")
   }
+
   return (
     <Center flexDirection={"column"} alignItems={"center"} style={[STYLES.backBlue, styles.height100, STYLES.fontWhite]}>
       <Center w="90%" bg={"white"}>
@@ -82,14 +91,24 @@ export default function Login(props) {
           <VStack ml={"3"} mr={"3"} space={3} mt="5">
             <FormControl >
               <FormControl.Label>Correo electrónico</FormControl.Label>
-              <Input value={dataLogin.username} onChangeText={value => setDataLogin({ ...dataLogin, ["username"]: value })} type='email' />
+              <Input onChangeText={formik.handleChange('username')}
+                onBlur={formik.handleBlur('username')}
+                value={formik.values.username} type='email' />
+              {formik.errors.username ? (
+                <Text color={"#FF0000"}>{formik.errors.username}</Text>
+              ) : null}
             </FormControl>
             <FormControl>
               <FormControl.Label >Contraseña</FormControl.Label>
-              <Input value={dataLogin.password} onChangeText={value => setDataLogin({ ...dataLogin, ["password"]: value })} type="password" />
+              <Input onChangeText={formik.handleChange('password')}
+                onBlur={formik.handleBlur('password')}
+                value={formik.values.password} type="password" />
+              {formik.errors.password ? (
+                <Text color={"#FF0000"}>{formik.errors.password}</Text>
+              ) : null}
             </FormControl>
             {isLoading ? <Loading /> : null}
-            <Button mt="4" bg="#042b61" onPress={goToDashboard}>
+            <Button mt="4" bg="#042b61" onPress={formik.handleSubmit} disabled={!(formik.isValid && formik.dirty)}>
               Iniciar sesión
             </Button>
             <Link onPress={goToForgot} marginTop={"4"} _text={{

@@ -15,7 +15,6 @@ export default function TableComponent(props) {
     const [filterText, setFilterText] = useState("");
     const filteredItems = data.filter(
         (item) => {
-            console.log(item[1])
             if (filterText === "") {
                 return item = item
             } else if (item[1].toLowerCase().includes(filterText.toLowerCase())) {
