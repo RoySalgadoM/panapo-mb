@@ -1,4 +1,4 @@
-import { View } from 'react-native'
+import { View, RefreshControl } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import TableComponent from '../components/TableComponent'
 import { Center, ScrollView, Input, Stack, FormControl, WarningOutlineIcon, Modal, Text, Button } from "native-base";
@@ -28,6 +28,13 @@ export default function AltaDireccion() {
     const [errorModify, setErrorModify] = useState(false)
     const [equalsPassword, setEqualsPassword] = useState(false)
     LogBox.ignoreLogs(['Warning: ...']); //Hide warnings
+    const [refreshing, setRefreshing] = React.useState(false);
+
+    const onRefresh = React.useCallback(() => {
+        setRefreshing(true);
+        getAll()
+        setRefreshing(false)
+    }, []);
     const formikRegister = useFormik({
         initialValues: {
             name: "",
@@ -85,7 +92,7 @@ export default function AltaDireccion() {
                     setObject([])
                     setIsOpenAlertRegister(true)
                     getAll()
-                    formikRegister.resetForm();
+                    formikRegister.resetForm
                     setIsLoadingRegister(false)
                 })
         },
@@ -127,6 +134,7 @@ export default function AltaDireccion() {
                         ...dataPerson,
                         password:values.password
                     }
+                    console.log(data)
                     fetch(`http://${ipServer}/api/user/update`, {
                         method: 'PUT',
                         headers: {
@@ -139,8 +147,6 @@ export default function AltaDireccion() {
                     })
                         .then((response) => response.json())
                         .then(async (responseJson) => {
-                            console.log(data)
-                        console.log(responseJson)
                             setObjectModify([])
                             setIsOpenAlertModify(true)
                             getAll()
@@ -169,8 +175,6 @@ export default function AltaDireccion() {
                 })
                     .then((response) => response.json())
                     .then(async (responseJson) => {
-                        console.log(dataPerson.person)
-                        console.log(responseJson)
                         setObjectModify([])
                         setIsOpenAlertModify(true)
                         getAll()
@@ -268,7 +272,11 @@ export default function AltaDireccion() {
         <View>
             {isOpenAlertDelete ? <AlertComponent isOpen={setisOpenAlertDelete} status={"success"} title={"Directivo eliminado correctamente"} /> : null}
             {isOpenAlertRegister ? <AlertComponent isOpen={setIsOpenAlertRegister} status={"success"} title={"Directivo registrado correctamente"} /> : null}
-            <ScrollView _contentContainerStyle={{
+            <ScrollView refreshControl={<RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />}
+            _contentContainerStyle={{
                 minW: "100%"
             }}>
                 <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} isOpen={false} title={"Registrar directivo"} showIcon={true} Form={

@@ -1,7 +1,7 @@
-import { View } from 'react-native'
+import { View, RefreshControl } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import TableComponent from '../components/TableComponent'
-import { Center, ScrollView, Input, Stack, FormControl, WarningOutlineIcon, Modal, Text, Select, CheckIcon } from "native-base";
+import { Center, ScrollView, Input, Stack, FormControl, WarningOutlineIcon, Modal, Text, Select, Button, CheckIcon } from "native-base";
 import BoxHeaderComponent from '../components/BoxHeaderComponent'
 import ActionsButtons from '../components/ActionsButtons'
 import ModalComponent from '../components/ModalComponent'
@@ -11,6 +11,8 @@ import { ipServer } from "../config/Config"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loading from '../components/Loading';
 import EnableAlertDialogComponent from '../components/EnableAlertDialogComponent';
+import * as yup from "yup";
+import { useFormik } from "formik";
 
 export default function Personal() {
     const [showModal, setShowModal] = useState(false);
@@ -29,6 +31,119 @@ export default function Personal() {
     const [equalsPassword, setEqualsPassword] = useState(false)
     const [showModalInfo, setShowModalInfo] = useState(false)
     const [showAlertEnable, setShowAlertEnable] = useState(false)
+    const [refreshing, setRefreshing] = React.useState(false);
+
+    const onRefresh = React.useCallback(() => {
+        setRefreshing(true);
+        getAll()
+        setRefreshing(false)
+    }, []);
+    const formikRegister = useFormik({
+        initialValues: {
+            name: "",
+            surname: "",
+            secondSurname: "",
+            dateBirth: "",
+            email: "",
+            phone: "",
+            profession: ""
+        },
+        validationSchema: yup.object().shape({
+            name: yup.string().required("Campo obligatorio"),
+            surname: yup.string().required("Campo obligatorio"),
+            secondSurname: yup.string().required("Campo obligatorio"),
+            dateBirth: yup.string().required("Campo obligatorio"),
+            email: yup.string().required("Campo obligatorio"),
+            phone: yup.string().required("Campo obligatorio"),
+            profession: yup.string().required("Campo obligatorio")
+        }),
+        onSubmit: async (values) => {
+            setIsLoadingRegister(true)
+            await getToken()
+            let registerData = {
+                ...values,
+                profession: {
+                    id: values.profession,
+                }
+            }
+            console.log(registerData)
+            fetch(`http://${ipServer}/api/person/`, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    "Authorization": `Bearer${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(registerData),
+
+            })
+                .then((response) => response.json())
+                .then(async (responseJson) => {
+                    setObject([])
+                    setIsOpenAlertRegister(true)
+                    getAll()
+                    setIsLoadingRegister(false)
+                    formikRegister.resetForm
+                })
+        },
+    });
+
+    const formikModify = useFormik({
+        initialValues: {
+            name: "",
+            surname: "",
+            secondSurname: "",
+            dateBirth: "",
+            phone: "",
+            profession: ""
+        },
+        validationSchema: yup.object().shape({
+            name: yup.string().required("Campo obligatorio"),
+            surname: yup.string().required("Campo obligatorio"),
+            secondSurname: yup.string().required("Campo obligatorio"),
+            dateBirth: yup.string().required("Campo obligatorio"),
+            phone: yup.string().required("Campo obligatorio"),
+            profession: yup.string().required("Campo obligatorio")
+        }),
+        onSubmit: async (values) => {
+            let data = {
+                ...objectModify,
+                name: values.name,
+                secondSurname: values.secondSurname,
+                surname: values.surname,
+                dateBirth: values.dateBirth,
+                phone: values.phone,
+                profession: {
+                    id: values.profession
+                }
+            }
+            console.log(data)
+            setIsLoadingModify(true)
+            setShowModal(false)
+            await getToken()
+            fetch(`http://${ipServer}/api/person/`, {
+                method: 'PUT',
+                headers: {
+                    Accept: 'application/json',
+                    "Authorization": `Bearer${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+
+            })
+                .then((response) => response.json())
+                .then(async (responseJson) => {
+                    setObjectModify([])
+                    setIsOpenAlertModify(true)
+                    getAll()
+                    setShowModal(false)
+                    setIsLoadingModify(false)
+                })
+            setIsLoadingModify(false)
+
+        }
+    });
+
     let token = ""
     const onDelete = () => {
         let data = {
@@ -83,179 +198,6 @@ export default function Personal() {
             })
     }
 
-    const modify = async () => {
-        setIsLoadingModify(true)
-        setShowModal(false)
-        await getToken()
-        fetch(`http://${ipServer}/api/person/`, {
-            method: 'PUT',
-            headers: {
-                Accept: 'application/json',
-                "Authorization": `Bearer${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(objectModify),
-
-        })
-            .then((response) => response.json())
-            .then(async (responseJson) => {
-                setObjectModify([])
-                setIsOpenAlertModify(true)
-                getAll()
-                setShowModal(false)
-                setIsLoadingModify(false)
-            })
-        setIsLoadingModify(false)
-
-        // if (objectModify.person.hasOwnProperty('name') && objectModify.person.hasOwnProperty('surname') && objectModify.person.hasOwnProperty('secondSurname') && objectModify.hasOwnProperty('password') && objectModify.hasOwnProperty('confirmPassword')) {
-
-        //     if (objectModify.person.name === "" || objectModify.person.surname == "" || objectModify.person.secondSurname == "") {
-        //         setErrorModify(true)
-        //     } else if (objectModify.password === objectModify.confirmPassword) {
-        //         setEqualsPassword(false)
-        //         setIsLoadingModify(true)
-        //         setErrorModify(false)
-        //         setShowModal(false)
-        //         fetch(`http://${ipServer}/api/user/update`, {
-        //             method: 'PUT',
-        //             headers: {
-        //                 Accept: 'application/json',
-        //                 "Authorization": `Bearer${token}`,
-        //                 'Content-Type': 'application/json',
-        //             },
-        //             body: JSON.stringify(objectModify),
-
-        //         })
-        //             .then((response) => response.json())
-        //             .then(async (responseJson) => {
-        //                 console.log(responseJson)
-        //                 setObjectModify([])
-        //                 setIsOpenAlertModify(true)
-        //                 getAll()
-        //                 setIsLoadingModify(false)
-        //             })
-        //         setIsLoadingModify(false)
-
-        //     } else {
-        //         setEqualsPassword(true)
-        //     }
-
-
-        // } else if (objectModify.person.hasOwnProperty('name') && objectModify.person.hasOwnProperty('surname') && objectModify.person.hasOwnProperty('secondSurname') && objectModify.hasOwnProperty('password')) {
-        //     setErrorModify(true)
-        // }
-        // else if (objectModify.person.hasOwnProperty('name') && objectModify.person.hasOwnProperty('surname') && objectModify.person.hasOwnProperty('secondSurname')) {
-        //     if (objectModify.person.name === "" || objectModify.person.surname == "" || objectModify.person.secondSurname == "") {
-        //         setErrorModify(true)
-        //     } else {
-        //         console.log("token")
-        //         console.log(token)
-        //         setIsLoadingModify(true)
-        //         setEqualsPassword(false)
-        //         setErrorModify(false)
-        //         setShowModal(false)
-        //         fetch(`http://${ipServer}/api/person/`, {
-        //             method: 'PUT',
-        //             headers: {
-        //                 Accept: 'application/json',
-        //                 "Authorization": `Bearer${token}`,
-        //                 'Content-Type': 'application/json',
-        //             },
-        //             body: JSON.stringify(objectModify.person),
-
-        //         })
-        //             .then((response) => response.json())
-        //             .then(async (responseJson) => {
-        //                 console.log(responseJson)
-        //                 setObjectModify([])
-        //                 setIsOpenAlertModify(true)
-        //                 getAll()
-        //                 setIsLoadingModify(false)
-        //             })
-        //     }
-
-        // } else {
-        //     console.log("error")
-        // }
-    }
-    const register = async () => {
-        setIsLoadingRegister(true)
-        await getToken()
-        let registerData = {
-            ...object,
-            profession: {
-                id: object.profession,
-            }
-        }
-        fetch(`http://${ipServer}/api/person/`, {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                "Authorization": `Bearer${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(registerData),
-
-        })
-            .then((response) => response.json())
-            .then(async (responseJson) => {
-                setObject([])
-                setIsOpenAlertRegister(true)
-                getAll()
-                setIsLoadingRegister(false)
-            })
-        // if (object.hasOwnProperty('name') && object.hasOwnProperty('surname') && object.hasOwnProperty('secondSurname') && object.hasOwnProperty('email')) {
-
-        //     setIsOpenAlertErrorRegister(false)
-
-        //     setIsLoadingRegister(true)
-        //     let registerData = {
-        //         "password": object.email,
-        //         "person": {
-        //             "name": object.name,
-        //             "surname": object.surname,
-        //             "secondSurname": object.secondSurname,
-        //             "email": object.email,
-        //             "profession": {
-        //                 "id": 2,
-        //                 "description": "Docente"
-        //             }
-        //         },
-        //         "authorities": [
-        //             {
-        //                 "id": 1,
-        //                 "description": "Directivo"
-        //             }
-        //         ],
-        //         "status": {
-        //             "id": 1,
-        //             "description": "Activo"
-        //         }
-        //     }
-        //     fetch(`http://${ipServer}/api/user/`, {
-        //         method: 'POST',
-        //         headers: {
-        //             Accept: 'application/json',
-        //             "Authorization": `Bearer${token}`,
-        //             'Content-Type': 'application/json',
-        //         },
-        //         body: JSON.stringify(registerData),
-
-        //     })
-        //         .then((response) => response.json())
-        //         .then(async (responseJson) => {
-        //             setObject([])
-        //             setIsOpenAlertRegister(true)
-        //             getAll()
-        //             setIsLoadingRegister(false)
-        //         })
-
-        // } else {
-        //     setIsLoadingRegister(false)
-        //     setIsOpenAlertRegister(false)
-        //     setIsOpenAlertErrorRegister(true)
-        // }
-    }
 
 
     const getToken = async () => {
@@ -281,9 +223,11 @@ export default function Personal() {
         })
             .then(async (response) => await response.json(response))
             .then(async (responseJson) => {
+                
                 let tempData = []
                 for (let i = 0; i < responseJson.data.length; i++) {
                     if (responseJson.data[i].profession.description != "Directivo") {
+                        
                         let newData = [
                             responseJson.data[i].id, `${responseJson.data[i].name} ${responseJson.data[i].surname} ${responseJson.data[i].secondSurname}`, responseJson.data[i].email
                             , <ActionsButtons name={"info"} action={() => {
@@ -291,9 +235,18 @@ export default function Personal() {
                                 setObjectModify(responseJson.data[i])
                             }} color={"white"} bgColor={"#17a2b8"} />,
                             <ActionsButtons action={() => {
-                                setShowModal(true)
+                                
                                 setObjectModify(responseJson.data[i])
-
+                                formikModify.values.profession = responseJson.data[i].profession.id
+                                formikModify.resetForm
+                                formikModify.values.name = responseJson.data[i].name
+                                formikModify.values.surname = responseJson.data[i].surname
+                                formikModify.values.secondSurname = responseJson.data[i].secondSurname
+                                formikModify.values.phone = responseJson.data[i].phone
+                                formikModify.values.dateBirth = responseJson.data[i].dateBirth
+                                formikModify.handleChange
+                                formikModify.handleBlur
+                                setShowModal(true)
                             }} name={"edit"} color={"black"} bgColor={"#ffc107"} />,
                             responseJson.data[i].status.id == 1 ? <ActionsButtons name={"trash"} action={() => {
                                 setShowAlertDelete(true)
@@ -302,7 +255,7 @@ export default function Personal() {
                                 setShowAlertEnable(true)
                                 setObjectModify(responseJson.data[i])
                             }} color={"white"} bgColor={"#218838"} />
-                            
+
                         ];
                         await tempData.push(newData)
 
@@ -327,48 +280,100 @@ export default function Personal() {
             {isOpenAlertDelete ? <AlertComponent isOpen={setisOpenAlertDelete} status={"success"} title={"Estado cambiado correctamente"} /> : null}
             {isOpenAlertRegister ? <AlertComponent isOpen={setIsOpenAlertRegister} status={"success"} title={"Personal registrado correctamente"} /> : null}
             {isOpenAlertErrorRegister ? <AlertComponent isOpen={setIsOpenAlertErrorRegister} status={"error"} title={"Rellene todos los campos primero"} /> : null}
-            <ScrollView _contentContainerStyle={{
+            <ScrollView refreshControl={<RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />}
+            _contentContainerStyle={{
                 minW: "100%"
             }}>
 
-                <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} action={register} isOpen={false} title={"Registrar personal"} showIcon={true} Form={
+                <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} formik={formikRegister} isOpen={false} title={"Registrar personal"} showIcon={true} Form={
 
                     <Stack mt={3} space={4} w="100%">
                         <FormControl isRequired>
                             <FormControl.Label>Nombre</FormControl.Label>
-                            <Input value={object.name} onChangeText={value => setObject({ ...object, ["name"]: value })} type='text' placeholder='Ejemplo: María' />
+                            <Input
+                                onChangeText={formikRegister.handleChange('name')}
+                                onBlur={formikRegister.handleBlur('name')}
+                                value={formikRegister.values.name}
+                                type='text' placeholder='Ejemplo: María' />
+                            {formikRegister.errors.name ? (
+                                <Text color={"#FF0000"}>{formikRegister.errors.name}</Text>
+                            ) : null}
                         </FormControl>
                         <FormControl isRequired>
                             <FormControl.Label>Primer apellido</FormControl.Label>
-                            <Input value={object.surname} type='text' onChangeText={value => setObject({ ...object, ["surname"]: value })} placeholder='Ejemplo: Valdez' />
+                            <Input
+                                onChangeText={formikRegister.handleChange('surname')}
+                                onBlur={formikRegister.handleBlur('surname')}
+                                value={formikRegister.values.surname}
+                                placeholder='Ejemplo: Valdez' />
+                            {formikRegister.errors.surname ? (
+                                <Text color={"#FF0000"}>{formikRegister.errors.surname}</Text>
+                            ) : null}
                         </FormControl>
                         <FormControl isRequired>
                             <FormControl.Label>Segundo apellido</FormControl.Label>
-                            <Input type='text' value={object.secondSurname} onChangeText={value => setObject({ ...object, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
+                            <Input type='text'
+                                onChangeText={formikRegister.handleChange('secondSurname')}
+                                onBlur={formikRegister.handleBlur('secondSurname')}
+                                value={formikRegister.values.secondSurname}
+                                placeholder='Ejemplo: Díaz' />
+                            {formikRegister.errors.secondSurname ? (
+                                <Text color={"#FF0000"}>{formikRegister.errors.secondSurname}</Text>
+                            ) : null}
                         </FormControl>
                         <FormControl isRequired>
                             <FormControl.Label>Fecha de nacimiento</FormControl.Label>
-                            <Input type='date' value={object.dateBirth} onChangeText={value => setObject({ ...object, ["dateBirth"]: value })} placeholder='Ejemplo: 2002-06-21' />
+                            <Input type='date'
+                                onChangeText={formikRegister.handleChange('dateBirth')}
+                                onBlur={formikRegister.handleBlur('dateBirth')}
+                                value={formikRegister.values.dateBirth}
+                                placeholder='Ejemplo: 2002-06-21' />
+                            {formikRegister.errors.dateBirth ? (
+                                <Text color={"#FF0000"}>{formikRegister.errors.dateBirth}</Text>
+                            ) : null}
                         </FormControl>
                         <FormControl isRequired>
                             <FormControl.Label>Correo eléctronico</FormControl.Label>
-                            <Input type='email' value={object.email} onChangeText={value => setObject({ ...object, ["email"]: value })} placeholder='Ejemplo: Email' />
+                            <Input type='email'
+                                onChangeText={formikRegister.handleChange('email')}
+                                onBlur={formikRegister.handleBlur('email')}
+                                value={formikRegister.values.email}
+                                placeholder='Ejemplo: Email' />
+                            {formikRegister.errors.email ? (
+                                <Text color={"#FF0000"}>{formikRegister.errors.email}</Text>
+                            ) : null}
                         </FormControl>
                         <FormControl isRequired>
                             <FormControl.Label>Teléfono</FormControl.Label>
-                            <Input type='number' value={object.phone} onChangeText={value => setObject({ ...object, ["phone"]: value })} placeholder='Ejemplo: 7775698741' />
+                            <Input type='number'
+                                onChangeText={formikRegister.handleChange('phone')}
+                                onBlur={formikRegister.handleBlur('phone')}
+                                value={formikRegister.values.phone}
+                                placeholder='Ejemplo: 7775698741' />
+                            {formikRegister.errors.phone ? (
+                                <Text color={"#FF0000"}>{formikRegister.errors.phone}</Text>
+                            ) : null}
                         </FormControl>
                         <FormControl isRequired>
                             <FormControl.Label>Rol</FormControl.Label>
-                            <Select selectedValue={object.profession} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
+                            <Select selectedValue={formikRegister.values.profession} onBlur={formikRegister.handleBlur('profession')} onValueChange={formikRegister.handleChange('profession')} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
                                 bg: "teal.600",
                                 endIcon: <CheckIcon size="5" />
-                            }} mt={1} onValueChange={value => setObject({ ...object, ["profession"]: value })}>
+                            }} mt={1}>
                                 <Select.Item label="Docente" value="1" />
                                 <Select.Item label="Becario" value="2" />
                             </Select>
+                            {formikRegister.errors.profession ? (
+                                <Text color={"#FF0000"}>{formikRegister.errors.profession}</Text>
+                            ) : null}
                         </FormControl>
-
+                        {isLoadingRegister ? <Loading /> : null}
+                        <Button onPress={formikRegister.handleSubmit} disabled={!(formikRegister.isValid && formikRegister.dirty)} mt="4" bg="#042b61" >
+                            Registrar
+                        </Button>
                     </Stack>
 
 
@@ -381,44 +386,84 @@ export default function Personal() {
                     data={data}
                 />
             </ScrollView>
-            <ModalComponent action={modify} content={
+            <ModalComponent formik={formikModify} content={
                 <Modal.Body>
                     {errorModify ? <AlertComponent isOpen={setErrorModify} status={"error"} title={"Rellene todos los campos primero"} /> : null}
                     {equalsPassword ? <AlertComponent isOpen={setEqualsPassword} status={"error"} title={"Las contraseñas no son iguales"} /> : null}
                     <FormControl isRequired>
                         <FormControl.Label>Nombre</FormControl.Label>
-                        <Input value={objectModify.name} onChangeText={value => setObjectModify({ ...objectModify, ["name"]: value })} type='text' placeholder='Ejemplo: María' />
+                        <Input
+                            onChangeText={formikModify.handleChange('name')}
+                            onBlur={formikModify.handleBlur('name')}
+                            value={formikModify.values.name}
+                            type='text' placeholder='Ejemplo: María' />
+                        {formikModify.errors.name ? (
+                            <Text color={"#FF0000"}>{formikModify.errors.name}</Text>
+                        ) : null}
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Primer apellido</FormControl.Label>
-                        <Input value={objectModify.surname} type='text' onChangeText={value => setObjectModify({ ...objectModify, ["surname"]: value })} placeholder='Ejemplo: Valdez' />
+                        <Input
+                            onChangeText={formikModify.handleChange('surname')}
+                            onBlur={formikModify.handleBlur('surname')}
+                            value={formikModify.values.surname}
+                            placeholder='Ejemplo: Valdez' />
+                        {formikModify.errors.surname ? (
+                            <Text color={"#FF0000"}>{formikModify.errors.surname}</Text>
+                        ) : null}
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Segundo apellido</FormControl.Label>
-                        <Input type='text' value={objectModify.secondSurname} onChangeText={value => setObjectModify({ ...objectModify, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
+                        <Input type='text'
+                            onChangeText={formikModify.handleChange('secondSurname')}
+                            onBlur={formikModify.handleBlur('secondSurname')}
+                            value={formikModify.values.secondSurname}
+                            placeholder='Ejemplo: Díaz' />
+                        {formikModify.errors.secondSurname ? (
+                            <Text color={"#FF0000"}>{formikModify.errors.secondSurname}</Text>
+                        ) : null}
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Fecha de nacimiento</FormControl.Label>
-                        <Input type='date' value={objectModify.dateBirth} onChangeText={value => setObjectModify({ ...objectModify, ["dateBirth"]: value })} placeholder='Ejemplo: 2002-06-21' />
+                        <Input type='date'
+                            onChangeText={formikModify.handleChange('dateBirth')}
+                            onBlur={formikModify.handleBlur('dateBirth')}
+                            value={formikModify.values.dateBirth}
+                            placeholder='Ejemplo: 2002-06-21' />
+                        {formikModify.errors.dateBirth ? (
+                            <Text color={"#FF0000"}>{formikModify.errors.dateBirth}</Text>
+                        ) : null}
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Teléfono</FormControl.Label>
-                        <Input type='number' value={objectModify.phone} onChangeText={value => setObjectModify({ ...objectModify, ["phone"]: value })} placeholder='Ejemplo: 7775698741' />
+                        <Input type='number'
+                            onChangeText={formikModify.handleChange('phone')}
+                            onBlur={formikModify.handleBlur('phone')}
+                            value={formikModify.values.phone}
+                            placeholder='Ejemplo: 7775698741' />
+                        {formikModify.errors.phone ? (
+                            <Text color={"#FF0000"}>{formikModify.errors.phone}</Text>
+                        ) : null}
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Rol</FormControl.Label>
-                        <Select selectedValue={showModal ? `${objectModify.profession.id}` : ""} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
+                        <Select  onBlur={formikModify.handleBlur('profession')} onValueChange={formikModify.handleChange('profession')} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
                             bg: "teal.600",
                             endIcon: <CheckIcon size="5" />
-                        }} mt={1} onValueChange={value => setObjectModify({ ...objectModify, "profession": { ...objectModify.profession, "id": value } })}>
+                        }} mt={1} selectedValue={`${formikModify.values.profession}`}>
                             <Select.Item label="Docente" value="1" />
                             <Select.Item label="Becario" value="2" />
                         </Select>
+                        {formikModify.errors.profession ? (
+                            <Text color={"#FF0000"}>{formikModify.errors.profession}</Text>
+                        ) : null}
                     </FormControl>
                     {isLoadingModify ? <Loading /> : null}
                 </Modal.Body>
             } showModal={showModal} header={"Modificar directivo"} setShowModal={setShowModal} />
-            <ModalComponent showButtonConfirm={true} action={modify} content={
+
+
+            <ModalComponent showButtonConfirm={true} content={
                 <Modal.Body>
                     <FormControl isDisabled isRequired>
                         <FormControl.Label>Nombre</FormControl.Label>

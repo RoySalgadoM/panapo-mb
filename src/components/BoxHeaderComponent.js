@@ -11,7 +11,7 @@ export default function BoxHeaderComponent(props) {
     return (
         <View style={styles.container}>
             <Box width="100%" bg={bgColor} borderBottomColor={"#042b61"} p="2" shadow={2} _text={{
-                fontSize: "md",
+                fontSize: "sm",
                 fontWeight: "bold",
                 color: "white"
             }}>

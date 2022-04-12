@@ -41,7 +41,7 @@ export default function ForgotPassword(props) {
                         setError(false)
                         setIsLoading(false)
                         props.navigation.navigate("recoverPassword")
-                        formik.resetForm();
+                        formik.resetForm
                     }
 
                 })

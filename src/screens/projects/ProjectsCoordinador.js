@@ -1,7 +1,7 @@
-import { View } from 'react-native'
+import { View, RefreshControl } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import TableComponent from '../../components/TableComponent'
-import { Center, ScrollView, Input, Stack, FormControl, WarningOutlineIcon, Modal, Text, Select, CheckIcon } from "native-base";
+import { Center, ScrollView, Input, Stack, FormControl, WarningOutlineIcon, Modal, Button, Text, Select, CheckIcon } from "native-base";
 import BoxHeaderComponent from '../../components/BoxHeaderComponent'
 import ActionsButtons from '../../components/ActionsButtons'
 import ModalComponent from '../../components/ModalComponent'
@@ -12,6 +12,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loading from '../../components/Loading';
 import EnableAlertDialogComponent from '../../components/EnableAlertDialogComponent';
 import OvalosTextComponent from '../../components/OvalosTextComponent';
+import * as yup from "yup";
+import { useFormik } from "formik";
 
 export default function ProjectsCoordinador() {
     const [showModal, setShowModal] = useState(false);
@@ -38,7 +40,222 @@ export default function ProjectsCoordinador() {
     const [showModalModifyProspecto, setShowModalModifyProspecto] = useState(false)
     const [modalStart, setModalStart] = useState(false)
     const [personal, setPersonal] = useState([])
-    const [dataRolProject, setDataRolProject] = useState([])
+
+    const [refreshing, setRefreshing] = React.useState(false);
+
+    const onRefresh = React.useCallback(() => {
+        setRefreshing(true);
+        getAll()
+        getAllClients()
+        getAllProyectos()
+        getAllProspecto()
+        getAllPersonal()
+        setRefreshing(false)
+    }, []);
+
+    const formikRegister = useFormik({
+        initialValues: {
+            project: "",
+            name: "",
+            description: "",
+            client: "",
+            cotizacion: "",
+            priceClient: "",
+            months: "",
+            numberBeca: "",
+        },
+        validationSchema: yup.object().shape({
+            name: yup.string().required("Campo obligatorio"),
+            description: yup.string().required("Campo obligatorio"),
+            client: yup.string().required("Campo obligatorio"),
+            cotizacion: yup.string().required("Campo obligatorio"),
+            priceClient: yup.string().required("Campo obligatorio"),
+            months: yup.string().required("Campo obligatorio"),
+            numberBeca: yup.string().required("Campo obligatorio")
+        }),
+        onSubmit: async (values) => {
+            setIsLoadingRegister(true)
+            await getToken()
+            let registerData = {}
+            if (values.project != "" && values.project != 0) {
+                registerData = {
+                    ...values,
+                    client: {
+                        id: values.client,
+                    },
+                    statusProject: {
+                        id: 1
+                    },
+                    project: {
+                        id: values.project
+                    }
+
+                }
+
+            } else if (values.project == 0 || values.project === "") {
+                registerData = {
+                    ...values,
+                    client: {
+                        id: values.client,
+                    },
+                    statusProject: {
+                        id: 1
+                    }
+                }
+
+                delete registerData.project
+            }
+            fetch(`http://${ipServer}/api/project/`, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    "Authorization": `Bearer${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(registerData),
+
+            })
+                .then((response) => response.json())
+                .then(async (responseJson) => {
+                    setIsOpenAlertRegister(true)
+                    getAll()
+                    getAllClients()
+                    getAllProspecto()
+                    getAllProyectos()
+                    formikRegister.resetForm
+                    setObject([])
+                    setIsLoadingRegister(false)
+                })
+        },
+    });
+
+    const formikModifyProspecto = useFormik({
+        initialValues: {
+            project: "",
+            name: "",
+            description: "",
+            client: "",
+            cotizacion: "",
+            priceClient: "",
+            months: "",
+            numberBeca: "",
+        },
+        validationSchema: yup.object().shape({
+            name: yup.string().required("Campo obligatorio"),
+            description: yup.string().required("Campo obligatorio"),
+            client: yup.string().required("Campo obligatorio"),
+            cotizacion: yup.string().required("Campo obligatorio"),
+            priceClient: yup.string().required("Campo obligatorio"),
+            months: yup.string().required("Campo obligatorio"),
+            numberBeca: yup.string().required("Campo obligatorio")
+        }),
+        onSubmit: async (values) => {
+            setIsLoadingModify(true)
+            setShowModalModifyProspecto(false)
+            await getToken()
+            let registerData = {}
+            if (values.project != "" && values.project != 0) {
+                registerData = {
+                    ...objectModify,
+                    name: values.name,
+                    description: values.description,
+                    client: {
+                        id: values.client,
+                    },
+                    project: {
+                        id: values.project
+                    },
+                    cotizacion: values.cotizacion,
+                    priceClient: values.priceClient,
+                    months: values.months,
+                    numberBeca: values.numberBeca
+
+                }
+            } else if (values.project == 0 || values.project === "") {
+                registerData = {
+                    ...objectModify,
+                    name: values.name,
+                    description: values.description,
+                    client: {
+                        id: values.client,
+                    },
+                    cotizacion: values.cotizacion,
+                    priceClient: values.priceClient,
+                    months: values.months,
+                    numberBeca: values.numberBeca
+                }
+
+                delete registerData.project
+            }
+            console.log(registerData)
+            fetch(`http://${ipServer}/api/project/`, {
+                method: 'PUT',
+                headers: {
+                    Accept: 'application/json',
+                    "Authorization": `Bearer${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(registerData),
+
+            })
+                .then((response) => response.json())
+                .then(async (responseJson) => {
+                    setIsOpenAlertModify(true)
+                    getAll()
+                    getAllClients()
+                    getAllProspecto()
+                    getAllProyectos()
+                    formikModify.resetForm
+                    setObject([])
+                    setIsLoadingModify(false)
+                })
+        }
+    });
+
+    const formikModify = useFormik({
+        initialValues: {
+            name: "",
+            surname: "",
+            secondSurname: "",
+            dateBirth: "",
+            phone: "",
+            profession: ""
+        },
+        validationSchema: yup.object().shape({
+            name: yup.string().required("Campo obligatorio"),
+            surname: yup.string().required("Campo obligatorio"),
+            secondSurname: yup.string().required("Campo obligatorio"),
+            dateBirth: yup.string().required("Campo obligatorio"),
+            phone: yup.string().required("Campo obligatorio"),
+            profession: yup.string().required("Campo obligatorio")
+        }),
+        onSubmit: async (values) => {
+
+        }
+    });
+
+    const formikIniciarProspecto = useFormik({
+        initialValues: {
+            name: "",
+            surname: "",
+            secondSurname: "",
+            dateBirth: "",
+            phone: "",
+            profession: ""
+        },
+        validationSchema: yup.object().shape({
+            name: yup.string().required("Campo obligatorio"),
+            surname: yup.string().required("Campo obligatorio"),
+            secondSurname: yup.string().required("Campo obligatorio"),
+            dateBirth: yup.string().required("Campo obligatorio"),
+            phone: yup.string().required("Campo obligatorio"),
+            profession: yup.string().required("Campo obligatorio")
+        }),
+        onSubmit: async (values) => {
+
+        }
+    });
+
     let token = ""
     const getAllClients = async () => {
         await getToken()
@@ -55,12 +272,11 @@ export default function ProjectsCoordinador() {
                 let client = []
                 for (let i = 0; i < responseJson.data.length; i++) {
                     let clientTemp = [
-                        <Select.Item label={`${responseJson.data[i].name} ${responseJson.data[i].surname}`} value={responseJson.data[i].id} />
+                        <Select.Item label={`${responseJson.data[i].name} ${responseJson.data[i].surname}`} value={`${responseJson.data[i].id}`} />
                     ]
                     client.push(clientTemp)
                 }
                 setDataClient(client)
-
             })
     }
 
@@ -78,9 +294,9 @@ export default function ProjectsCoordinador() {
             .then(async (responseJson) => {
                 let personal = []
                 for (let i = 0; i < responseJson.data.length; i++) {
-                    if (responseJson.data.profession.name === "Docente" || responseJson.data.profession.name === "Becario") {
+                    if (responseJson.data[i].profession.name === "Docente" || responseJson.data[i].profession.name === "Becario") {
                         let personalTemp = [
-                            <Select.Item label={`${responseJson.data[i].name} ${responseJson.data[i].surname}`} value={responseJson.data[i].id} />
+                            <Select.Item label={`${responseJson.data[i].name} ${responseJson.data[i].surname}`} value={`${responseJson.data[i].id}`} />
                         ]
                         personal.push(personalTemp)
                     }
@@ -105,10 +321,12 @@ export default function ProjectsCoordinador() {
             .then(async (responseJson) => {
                 let proyects = []
                 for (let i = 0; i < responseJson.data.length; i++) {
-                    let proyectTemp = [
-                        <Select.Item label={`${responseJson.data[i].name}`} value={responseJson.data[i].id} />
-                    ]
-                    proyects.push(proyectTemp)
+                    if (responseJson.data[i].statusProject.id != 1) {
+                        let proyectTemp = [
+                            <Select.Item label={`${responseJson.data[i].name}`} value={`${responseJson.data[i].id}`} />
+                        ]
+                        proyects.push(proyectTemp)
+                    }
                 }
                 setDataProjects(proyects)
             })
@@ -263,92 +481,6 @@ export default function ProjectsCoordinador() {
         // }
     }
 
-    const modifyProspeto = async () => {
-        console.log(objectModify)
-        setIsLoadingModify(true)
-        setShowModalModifyProspecto(false)
-        await getToken()
-        fetch(`http://${ipServer}/api/project/`, {
-            method: 'PUT',
-            headers: {
-                Accept: 'application/json',
-                "Authorization": `Bearer${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(objectModify),
-
-        })
-            .then((response) => response.json())
-            .then(async (responseJson) => {
-                console.log(responseJson)
-                setObjectModify([])
-                setIsOpenAlertModify(true)
-                getAll()
-                getAllClients()
-                getAllProspecto()
-                getAllProyectos()
-                setShowModal(false)
-                setIsLoadingModify(false)
-            })
-        setIsLoadingModify(false)
-    }
-    const register = async () => {
-        setIsLoadingRegister(true)
-        await getToken()
-        let registerData = {}
-        if (object.hasOwnProperty('project') && object.project != 0) {
-            registerData = {
-                ...object,
-                client: {
-                    id: object.client,
-                },
-                statusProject: {
-                    id: 1
-                },
-                project: {
-                    id: object.project
-                }
-
-            }
-
-        } else if (object.project == 0) {
-            registerData = {
-                ...object,
-                client: {
-                    id: object.client,
-                },
-                statusProject: {
-                    id: 1
-                }
-            }
-
-            delete registerData.project
-        }
-
-        console.log(registerData)
-
-        fetch(`http://${ipServer}/api/project/`, {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                "Authorization": `Bearer${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(registerData),
-
-        })
-            .then((response) => response.json())
-            .then(async (responseJson) => {
-                console.log(responseJson)
-                setIsOpenAlertRegister(true)
-                getAll()
-                getAllClients()
-                getAllProspecto()
-                getAllProyectos()
-                setObject([])
-                setIsLoadingRegister(false)
-            })
-    }
 
 
     const getToken = async () => {
@@ -438,7 +570,16 @@ export default function ProjectsCoordinador() {
                             <ActionsButtons action={() => {
                                 setShowModalModifyProspecto(true)
                                 setObjectModify(responseJson.data[i])
-
+                                formikModifyProspecto.resetForm
+                                formikModifyProspecto.values.project = responseJson.data[i].project == null ? 0 : responseJson.data[i].project.id
+                                formikModifyProspecto.values.name = responseJson.data[i].name
+                                formikModifyProspecto.values.description = responseJson.data[i].description
+                                formikModifyProspecto.values.client = responseJson.data[i].client.id
+                                formikModifyProspecto.values.cotizacion = responseJson.data[i].cotizacion
+                                formikModifyProspecto.values.priceClient = responseJson.data[i].priceClient
+                                formikModifyProspecto.values.months = responseJson.data[i].months
+                                formikModifyProspecto.values.numberBeca = responseJson.data[i].numberBeca
+                                formikModifyProspecto.handleChange
                             }} name={"edit"} color={"black"} bgColor={"#ffc107"} />,
                             <ActionsButtons name={"play"} action={() => {
                                 setObjectModify(responseJson.data[i])
@@ -473,78 +614,132 @@ export default function ProjectsCoordinador() {
             {isOpenAlertDelete ? <AlertComponent isOpen={setisOpenAlertDelete} status={"success"} title={"Estado cambiado correctamente"} /> : null}
             {isOpenAlertRegister ? <AlertComponent isOpen={setIsOpenAlertRegister} status={"success"} title={"Proyecto registrado correctamente"} /> : null}
             {isOpenAlertErrorRegister ? <AlertComponent isOpen={setIsOpenAlertErrorRegister} status={"error"} title={"Rellene todos los campos primero"} /> : null}
-            <ScrollView _contentContainerStyle={{
+            <ScrollView refreshControl={<RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+            />} _contentContainerStyle={{
                 minW: "100%"
             }}>
 
-                <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} action={register} isOpen={false} title={"Registrar proyectos"} showIcon={true} Form={
+                <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} formik={formikRegister} isOpen={false} title={"Registrar proyectos"} showIcon={true} Form={
                     <Center>
-                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} action={register} isOpen={false} title={"Datos del proyecto"} showIcon={true} Form={
-                            <Stack mt={3} space={4} w="100%">
-                                <FormControl isRequired>
-                                    <FormControl.Label>Proyecto anterior</FormControl.Label>
-                                    <Select selectedValue={object.project} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
-                                        bg: "teal.600",
-                                        endIcon: <CheckIcon size="5" />
-                                    }} mt={1} onValueChange={value => setObject({ ...object, ["project"]: value })}>
-                                        <Select.Item label="No aplica" value="0" />
-                                        {dataProjects}
-                                    </Select>
-                                    <FormControl.HelperText>
-                                        Solo seleccionar un proyecto si se requiere un nuevo ciclo del mismo
-                                    </FormControl.HelperText>
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Nombre del proyecto</FormControl.Label>
-                                    <Input type='number' value={object.name} onChangeText={value => setObject({ ...object, ["name"]: value })} placeholder='Ejemplo: SIGEH' />
-                                </FormControl>
-                                <FormControl isDisabled isRequired>
-                                    <FormControl.Label>Estado del proyecto</FormControl.Label>
-                                    <Input type='text' value={`Prospecto`} onChangeText={value => setObject({ ...object, ["statusProject"]: 1 })} placeholder='Prospecto' />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Descripción del proyecto</FormControl.Label>
-                                    <Input type='text' value={object.description} onChangeText={value => setObject({ ...object, ["description"]: value })} placeholder='Ejemplo: Sirve para hacer compras' />
-                                </FormControl>
-                            </Stack>
+                        <Stack mt={3} space={4} w="100%">
+                            <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Datos del proyecto"} showIcon={true} Form={
+                                <Center>
+                                    <FormControl isRequired>
+                                        <FormControl.Label>Proyecto anterior</FormControl.Label>
+                                        <Select
+                                            selectedValue={formikRegister.values.project} onBlur={formikRegister.handleBlur('project')} onValueChange={formikRegister.handleChange('project')}
+                                            accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
+                                                bg: "teal.600",
+                                                endIcon: <CheckIcon size="5" />
+                                            }} mt={1} >
+                                            <Select.Item label="No aplica" value="0" />
+                                            {dataProjects}
+                                        </Select>
+                                        <FormControl.HelperText>
+                                            Solo seleccionar un proyecto si se requiere un nuevo ciclo del mismo
+                                        </FormControl.HelperText>
+                                    </FormControl>
+                                    <FormControl isRequired>
+                                        <FormControl.Label>Nombre del proyecto</FormControl.Label>
+                                        <Input type='text'
+                                            onChangeText={formikRegister.handleChange('name')}
+                                            onBlur={formikRegister.handleBlur('name')}
+                                            value={formikRegister.values.name}
+                                            placeholder='Ejemplo: SIGEH' />
+                                        {formikRegister.errors.name ? (
+                                            <Text color={"#FF0000"}>{formikRegister.errors.name}</Text>
+                                        ) : null}
+                                    </FormControl>
+                                    <FormControl isDisabled isRequired>
+                                        <FormControl.Label>Estado del proyecto</FormControl.Label>
+                                        <Input type='text'
+                                            placeholder='Prospecto' />
+                                    </FormControl>
+                                    <FormControl isRequired>
+                                        <FormControl.Label>Descripción del proyecto</FormControl.Label>
+                                        <Input type='text'
+                                            onChangeText={formikRegister.handleChange('description')}
+                                            onBlur={formikRegister.handleBlur('description')}
+                                            value={formikRegister.values.description}
+                                            placeholder='Ejemplo: Sirve para hacer compras' />
+                                        {formikRegister.errors.description ? (
+                                            <Text color={"#FF0000"}>{formikRegister.errors.description}</Text>
+                                        ) : null}
+                                    </FormControl>
+                                </Center>
+                            } />
+                            <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Clientes del proyecto"} showIcon={true} Form={
+                                <Center>
+                                    <FormControl isRequired>
+                                        <FormControl.Label>Seleccionar un cliente</FormControl.Label>
+                                        <Select selectedValue={`${formikRegister.values.client}`} onBlur={formikRegister.handleBlur('client')} onValueChange={formikRegister.handleChange('client')} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
+                                            bg: "teal.600",
+                                            endIcon: <CheckIcon size="5" />
+                                        }} mt={1} >
+                                            {dataClient}
+                                        </Select>
+                                        {formikRegister.errors.client ? (
+                                            <Text color={"#FF0000"}>{formikRegister.errors.client}</Text>
+                                        ) : null}
+                                    </FormControl>
+                                </Center>
+                            } />
+                            <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Cotización del proyecto"} showIcon={true} Form={
 
-                        } />
-                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} action={register} isOpen={false} title={"Clientes del proyecto"} showIcon={true} Form={
-                            <Stack mt={3} space={4} w="100%">
-
-                                <FormControl isRequired>
-                                    <FormControl.Label>Seleccionar un cliente</FormControl.Label>
-                                    <Select selectedValue={object.client} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
-                                        bg: "teal.600",
-                                        endIcon: <CheckIcon size="5" />
-                                    }} mt={1} onValueChange={value => setObject({ ...object, ["client"]: value })}>
-                                        {dataClient}
-                                    </Select>
-                                </FormControl>
-
-                            </Stack>
-
-                        } />
-                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} action={register} isOpen={false} title={"Cotización del proyecto"} showIcon={true} Form={
-                            <Stack mt={3} space={4} w="100%">
-                                <FormControl isRequired>
-                                    <FormControl.Label>Presupuesto</FormControl.Label>
-                                    <Input value={object.cotizacion} onChangeText={value => setObject({ ...object, ["cotizacion"]: value })} type='text' placeholder='Ejemplo: 5000' />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Precio al cliente</FormControl.Label>
-                                    <Input value={object.priceClient} type='text' onChangeText={value => setObject({ ...object, ["priceClient"]: value })} placeholder='Ejemplo: 50000' />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Tiempo estimado (meses)</FormControl.Label>
-                                    <Input type='text' value={object.months} onChangeText={value => setObject({ ...object, ["months"]: value })} placeholder='Ejemplo: 12' />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormControl.Label>Cantidad de becarios</FormControl.Label>
-                                    <Input type='date' value={object.numberBeca} onChangeText={value => setObject({ ...object, ["numberBeca"]: value })} placeholder='Ejemplo: 2' />
-                                </FormControl>
-                            </Stack>
-                        } />
+                                <Center>
+                                    <FormControl isRequired>
+                                        <FormControl.Label>Presupuesto</FormControl.Label>
+                                        <Input
+                                            onChangeText={formikRegister.handleChange('cotizacion')}
+                                            onBlur={formikRegister.handleBlur('cotizacion')}
+                                            value={formikRegister.values.cotizacion}
+                                            type='text' placeholder='Ejemplo: 5000' />
+                                        {formikRegister.errors.cotizacion ? (
+                                            <Text color={"#FF0000"}>{formikRegister.errors.cotizacion}</Text>
+                                        ) : null}
+                                    </FormControl>
+                                    <FormControl isRequired>
+                                        <FormControl.Label>Precio al cliente</FormControl.Label>
+                                        <Input
+                                            onChangeText={formikRegister.handleChange('priceClient')}
+                                            onBlur={formikRegister.handleBlur('priceClient')}
+                                            value={formikRegister.values.priceClient}
+                                            placeholder='Ejemplo: 50000' />
+                                        {formikRegister.errors.priceClient ? (
+                                            <Text color={"#FF0000"}>{formikRegister.errors.priceClient}</Text>
+                                        ) : null}
+                                    </FormControl>
+                                    <FormControl isRequired>
+                                        <FormControl.Label>Tiempo estimado (meses)</FormControl.Label>
+                                        <Input type='text'
+                                            onChangeText={formikRegister.handleChange('months')}
+                                            onBlur={formikRegister.handleBlur('months')}
+                                            value={formikRegister.values.months}
+                                            placeholder='Ejemplo: 12' />
+                                        {formikRegister.errors.months ? (
+                                            <Text color={"#FF0000"}>{formikRegister.errors.months}</Text>
+                                        ) : null}
+                                    </FormControl>
+                                    <FormControl isRequired>
+                                        <FormControl.Label>Cantidad de becarios</FormControl.Label>
+                                        <Input type='date'
+                                            onChangeText={formikRegister.handleChange('numberBeca')}
+                                            onBlur={formikRegister.handleBlur('numberBeca')}
+                                            value={formikRegister.values.numberBeca}
+                                            placeholder='Ejemplo: 2' />
+                                        {formikRegister.errors.numberBeca ? (
+                                            <Text color={"#FF0000"}>{formikRegister.errors.numberBeca}</Text>
+                                        ) : null}
+                                    </FormControl>
+                                </Center>
+                            } />
+                            {isLoadingRegister ? <Loading /> : null}
+                            <Button onPress={formikRegister.handleSubmit} disabled={!(formikRegister.isValid && formikRegister.dirty)} mt="4" bg="#042b61" >
+                                Registrar
+                            </Button>
+                        </Stack>
                     </Center>
                 } />
                 {isOpenAlertModify ? <AlertComponent isOpen={setIsOpenAlertModify} status={"success"} title={"Proyecto modificado correctamente"} /> : null}
@@ -561,90 +756,12 @@ export default function ProjectsCoordinador() {
                 />
 
             </ScrollView>
-            <ModalComponent action={modify} content={
-                <Modal.Body>
-                    {errorModify ? <AlertComponent isOpen={setErrorModify} status={"error"} title={"Rellene todos los campos primero"} /> : null}
-                    {equalsPassword ? <AlertComponent isOpen={setEqualsPassword} status={"error"} title={"Las contraseñas no son iguales"} /> : null}
-                    <FormControl isRequired>
-                        <FormControl.Label>Nombre</FormControl.Label>
-                        <Input value={objectModify.name} onChangeText={value => setObjectModify({ ...objectModify, ["name"]: value })} type='text' placeholder='Ejemplo: María' />
-                    </FormControl>
-                    <FormControl isRequired>
-                        <FormControl.Label>Primer apellido</FormControl.Label>
-                        <Input value={objectModify.surname} type='text' onChangeText={value => setObjectModify({ ...objectModify, ["surname"]: value })} placeholder='Ejemplo: Valdez' />
-                    </FormControl>
-                    <FormControl isRequired>
-                        <FormControl.Label>Segundo apellido</FormControl.Label>
-                        <Input type='text' value={objectModify.secondSurname} onChangeText={value => setObjectModify({ ...objectModify, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
-                    </FormControl>
-                    <FormControl isRequired>
-                        <FormControl.Label>Fecha de nacimiento</FormControl.Label>
-                        <Input type='date' value={objectModify.dateBirth} onChangeText={value => setObjectModify({ ...objectModify, ["dateBirth"]: value })} placeholder='Ejemplo: 2002-06-21' />
-                    </FormControl>
-                    <FormControl isRequired>
-                        <FormControl.Label>Teléfono</FormControl.Label>
-                        <Input type='number' value={objectModify.phone} onChangeText={value => setObjectModify({ ...objectModify, ["phone"]: value })} placeholder='Ejemplo: 7775698741' />
-                    </FormControl>
-                    <FormControl isRequired>
-                        <FormControl.Label>Rol</FormControl.Label>
-                        <Select selectedValue={showModal ? `${objectModify.profession.id}` : ""} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
-                            bg: "teal.600",
-                            endIcon: <CheckIcon size="5" />
-                        }} mt={1} onValueChange={value => setObjectModify({ ...objectModify, "profession": { ...objectModify.profession, "id": value } })}>
-                            <Select.Item label="Docente" value="1" />
-                            <Select.Item label="Becario" value="2" />
-                        </Select>
-                    </FormControl>
-                    {isLoadingModify ? <Loading /> : null}
-                </Modal.Body>
-            } showModal={showModal} header={"Modificar directivo"} setShowModal={setShowModal} />
-
-
-
-
-
-            <ModalComponent showButtonConfirm={true} action={modify} content={
-                <Modal.Body>
-                    {/* <FormControl isDisabled isRequired>
-                        <FormControl.Label>Nombre</FormControl.Label>
-                        <Input value={objectModify.name} onChangeText={value => setObjectModify({ ...objectModify, ["name"]: value })} type='text' placeholder='Ejemplo: María' />
-                    </FormControl>
-                    <FormControl isDisabled isRequired>
-                        <FormControl.Label>Primer apellido</FormControl.Label>
-                        <Input value={objectModify.surname} type='text' onChangeText={value => setObjectModify({ ...objectModify, ["surname"]: value })} placeholder='Ejemplo: Valdez' />
-                    </FormControl>
-                    <FormControl isDisabled isRequired>
-                        <FormControl.Label>Segundo apellido</FormControl.Label>
-                        <Input type='text' value={objectModify.secondSurname} onChangeText={value => setObjectModify({ ...objectModify, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
-                    </FormControl>
-                    <FormControl isDisabled isRequired>
-                        <FormControl.Label>Fecha de nacimiento</FormControl.Label>
-                        <Input type='date' value={objectModify.dateBirth} onChangeText={value => setObjectModify({ ...objectModify, ["dateBirth"]: value })} placeholder='Ejemplo: 2002-06-21' />
-                    </FormControl>
-                    <FormControl isDisabled isRequired>
-                        <FormControl.Label>Teléfono</FormControl.Label>
-                        <Input type='number' value={objectModify.phone} onChangeText={value => setObjectModify({ ...objectModify, ["phone"]: value })} placeholder='Ejemplo: 7775698741' />
-                    </FormControl>
-                    <FormControl isDisabled isRequired>
-                        <FormControl.Label>Rol</FormControl.Label>
-                        <Select selectedValue={showModalInfo ? `${objectModify.profession.id}` : ""} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
-                            bg: "teal.600",
-                            endIcon: <CheckIcon size="5" />
-                        }} mt={1} onValueChange={value => setObjectModify({ ...objectModify, "profession": { ...objectModify.profession, "id": value } })}>
-                            <Select.Item label="Docente" value="1" />
-                            <Select.Item label="Becario" value="2" />
-                        </Select>
-                    </FormControl> */}
-                    {isLoadingModify ? <Loading /> : null}
-                </Modal.Body>
-            } showModal={showModalInfo} header={"Detalles del personal"} setShowModal={setShowModalInfo} />
-
 
             {/* Prospectos */}
             <ModalComponent showButtonConfirm={true} action={modify} content={
                 <Modal.Body>
                     <Center>
-                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} action={register} isOpen={false} title={"Datos del proyecto"} showIcon={true} Form={
+                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Datos del proyecto"} showIcon={true} Form={
                             <Stack mt={3} space={4} w="100%">
                                 <FormControl isDisabled isRequired>
                                     <FormControl.Label>Proyecto anterior</FormControl.Label>
@@ -665,7 +782,7 @@ export default function ProjectsCoordinador() {
                             </Stack>
 
                         } />
-                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} action={register} isOpen={false} title={"Clientes del proyecto"} showIcon={true} Form={
+                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Clientes del proyecto"} showIcon={true} Form={
                             <Stack mt={3} space={4} w="100%">
 
                                 <FormControl isDisabled isRequired>
@@ -676,7 +793,7 @@ export default function ProjectsCoordinador() {
                             </Stack>
 
                         } />
-                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} action={register} isOpen={false} title={"Cotización del proyecto"} showIcon={true} Form={
+                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Cotización del proyecto"} showIcon={true} Form={
                             <Stack mt={3} space={4} w="100%">
                                 <FormControl isDisabled isRequired>
                                     <FormControl.Label>Presupuesto</FormControl.Label>
@@ -701,17 +818,19 @@ export default function ProjectsCoordinador() {
                 </Modal.Body>
             } showModal={showModalInfoProspecto} header={"Detalles del proyecto"} setShowModal={setShowModalInfoProspecto} />
 
-            <ModalComponent action={modifyProspeto} content={
+            <ModalComponent formik={formikModifyProspecto} content={
                 <Modal.Body>
                     <Center>
-                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} action={register} isOpen={false} title={"Datos del proyecto"} showIcon={true} Form={
+                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Datos del proyecto"} showIcon={true} Form={
                             <Stack mt={3} space={4} w="100%">
                                 <FormControl isRequired>
                                     <FormControl.Label>Proyecto anterior</FormControl.Label>
-                                    <Select selectedValue={showModalModifyProspecto ? objectModify.project == null ? "0" : objectModify.project.id : ""} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
-                                        bg: "teal.600",
-                                        endIcon: <CheckIcon size="5" />
-                                    }} mt={1} onValueChange={value => setObjectModify({ ...objectModify, "project": { ...objectModify.project, "id": value } })}>
+                                    <Select
+                                        selectedValue={formikModifyProspecto.values.project} onBlur={formikModifyProspecto.handleBlur('project')} onValueChange={formikModifyProspecto.handleChange('project')}
+                                        accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
+                                            bg: "teal.600",
+                                            endIcon: <CheckIcon size="5" />
+                                        }} mt={1} >
                                         <Select.Item label="No aplica" value="0" />
                                         {dataProjects}
                                     </Select>
@@ -721,52 +840,95 @@ export default function ProjectsCoordinador() {
                                 </FormControl>
                                 <FormControl isRequired>
                                     <FormControl.Label>Nombre del proyecto</FormControl.Label>
-                                    <Input type='number' value={objectModify.name} onChangeText={value => setObjectModify({ ...objectModify, ["name"]: value })} placeholder='Ejemplo: SIGEH' />
+                                    <Input type='text'
+                                        onChangeText={formikModifyProspecto.handleChange('name')}
+                                        onBlur={formikModifyProspecto.handleBlur('name')}
+                                        value={formikModifyProspecto.values.name}
+                                        placeholder='Ejemplo: SIGEH' />
                                 </FormControl>
+                                {formikModifyProspecto.errors.name ? (
+                                    <Text color={"#FF0000"}>{formikModifyProspecto.errors.name}</Text>
+                                ) : null}
                                 <FormControl isDisabled isRequired>
                                     <FormControl.Label>Estado del proyecto</FormControl.Label>
-                                    <Input type='text' value={`Prospecto`} onChangeText={value => setObjectModify({ ...objectModify, ["statusProject"]: 1 })} placeholder='Prospecto' />
+                                    <Input type='text'
+                                        placeholder='Prospecto' />
                                 </FormControl>
                                 <FormControl isRequired>
                                     <FormControl.Label>Descripción del proyecto</FormControl.Label>
-                                    <Input type='text' value={objectModify.description} onChangeText={value => setObjectModify({ ...objectModify, ["description"]: value })} placeholder='Ejemplo: Sirve para hacer compras' />
+                                    <Input type='text'
+                                        onChangeText={formikModifyProspecto.handleChange('description')}
+                                        onBlur={formikModifyProspecto.handleBlur('description')}
+                                        value={formikModifyProspecto.values.description}
+                                        placeholder='Ejemplo: Sirve para hacer compras' />
+                                    {formikModifyProspecto.errors.description ? (
+                                        <Text color={"#FF0000"}>{formikModifyProspecto.errors.description}</Text>
+                                    ) : null}
                                 </FormControl>
                             </Stack>
 
                         } />
-                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} action={register} isOpen={false} title={"Clientes del proyecto"} showIcon={true} Form={
+                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Clientes del proyecto"} showIcon={true} Form={
                             <Stack mt={3} space={4} w="100%">
-
                                 <FormControl isRequired>
                                     <FormControl.Label>Seleccionar un cliente</FormControl.Label>
-                                    <Select selectedValue={showModalModifyProspecto ? objectModify.client.id : ""} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
+                                    <Select selectedValue={`${formikModifyProspecto.values.client}`} onBlur={formikModifyProspecto.handleBlur('client')} onValueChange={formikModifyProspecto.handleChange('client')} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
                                         bg: "teal.600",
                                         endIcon: <CheckIcon size="5" />
-                                    }} mt={1} onValueChange={value => setObjectModify({ ...objectModify, "client": { ...objectModify.client, "id": value } })}>
+                                    }} mt={1} >
                                         {dataClient}
                                     </Select>
+                                    {formikModify.errors.client ? (
+                                        <Text color={"#FF0000"}>{formikModify.errors.client}</Text>
+                                    ) : null}
                                 </FormControl>
-
                             </Stack>
-
                         } />
-                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} action={register} isOpen={false} title={"Cotización del proyecto"} showIcon={true} Form={
+                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Cotización del proyecto"} showIcon={true} Form={
                             <Stack mt={3} space={4} w="100%">
                                 <FormControl isRequired>
                                     <FormControl.Label>Presupuesto</FormControl.Label>
-                                    <Input value={objectModify.cotizacion} onChangeText={value => setObjectModify({ ...objectModify, ["cotizacion"]: value })} type='text' placeholder='Ejemplo: 5000' />
+                                    <Input
+                                        onChangeText={formikModifyProspecto.handleChange('cotizacion')}
+                                        onBlur={formikModifyProspecto.handleBlur('cotizacion')}
+                                        value={formikModifyProspecto.values.cotizacion}
+                                        type='text' placeholder='Ejemplo: 5000' />
+                                    {formikModifyProspecto.errors.cotizacion ? (
+                                        <Text color={"#FF0000"}>{formikModifyProspecto.errors.cotizacion}</Text>
+                                    ) : null}
                                 </FormControl>
                                 <FormControl isRequired>
                                     <FormControl.Label>Precio al cliente</FormControl.Label>
-                                    <Input value={objectModify.priceClient} type='text' onChangeText={value => setObjectModify({ ...objectModify, ["priceClient"]: value })} placeholder='Ejemplo: 50000' />
+                                    <Input
+                                        onChangeText={formikModifyProspecto.handleChange('priceClient')}
+                                        onBlur={formikModifyProspecto.handleBlur('priceClient')}
+                                        value={formikModifyProspecto.values.priceClient}
+                                        placeholder='Ejemplo: 50000' />
+                                    {formikModifyProspecto.errors.priceClient ? (
+                                        <Text color={"#FF0000"}>{formikModifyProspecto.errors.priceClient}</Text>
+                                    ) : null}
                                 </FormControl>
                                 <FormControl isRequired>
                                     <FormControl.Label>Tiempo estimado (meses)</FormControl.Label>
-                                    <Input type='text' value={objectModify.months} onChangeText={value => setObjectModify({ ...objectModify, ["months"]: value })} placeholder='Ejemplo: 12' />
+                                    <Input type='text'
+                                        onChangeText={formikModifyProspecto.handleChange('months')}
+                                        onBlur={formikModifyProspecto.handleBlur('months')}
+                                        value={formikModifyProspecto.values.months}
+                                        placeholder='Ejemplo: 12' />
+                                    {formikModifyProspecto.errors.months ? (
+                                        <Text color={"#FF0000"}>{formikModifyProspecto.errors.months}</Text>
+                                    ) : null}
                                 </FormControl>
                                 <FormControl isRequired>
                                     <FormControl.Label>Cantidad de becarios</FormControl.Label>
-                                    <Input type='date' value={objectModify.numberBeca} onChangeText={value => setObjectModify({ ...objectModify, ["numberBeca"]: value })} placeholder='Ejemplo: 2' />
+                                    <Input type='date'
+                                        onChangeText={formikModifyProspecto.handleChange('numberBeca')}
+                                        onBlur={formikModifyProspecto.handleBlur('numberBeca')}
+                                        value={formikModifyProspecto.values.numberBeca}
+                                        placeholder='Ejemplo: 2' />
+                                    {formikModifyProspecto.errors.numberBeca ? (
+                                        <Text color={"#FF0000"}>{formikModifyProspecto.errors.numberBeca}</Text>
+                                    ) : null}
                                 </FormControl>
                             </Stack>
                         } />
@@ -775,10 +937,10 @@ export default function ProjectsCoordinador() {
                 </Modal.Body>
             } showModal={showModalModifyProspecto} header={"Modificar proyecto"} setShowModal={setShowModalModifyProspecto} />
 
-            <ModalComponent action={modifyProspeto} content={
+            <ModalComponent formik={formikModifyProspecto} content={
                 <Modal.Body>
                     <Center>
-                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} action={register} isOpen={false} title={"Datos del proyecto"} showIcon={true} Form={
+                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Datos del proyecto"} showIcon={true} Form={
                             <Stack mt={3} space={4} w="100%">
 
                                 <FormControl isRequired>
@@ -812,7 +974,7 @@ export default function ProjectsCoordinador() {
                                 </FormControl>
                                 <FormControl isRequired>
                                     <FormControl.Label>Fecha de inicio</FormControl.Label>
-                                    <Input value={objectModify.dateStart} onChangeText={value => setObjectModify({ ...objectModify, ["dateStart"]: value })} type='text' placeholder='Ejemplo: 5000' />
+                                    <Input keyboardType='' value={objectModify.dateStart} onChangeText={value => setObjectModify({ ...objectModify, ["dateStart"]: value })} type='text' placeholder='Ejemplo: 5000' />
                                 </FormControl>
                                 <FormControl isRequired>
                                     <FormControl.Label>Fecha de fin</FormControl.Label>
@@ -821,12 +983,12 @@ export default function ProjectsCoordinador() {
                             </Stack>
 
                         } />
-                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} action={register} isOpen={false} title={"Equipo de trabajo"} showIcon={true} Form={
+                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Equipo de trabajo"} showIcon={true} Form={
                             <Stack mt={3} space={4} w="100%">
 
                                 <FormControl isRequired>
                                     <FormControl.Label>Responsable de Proyecto</FormControl.Label>
-                                    <Select  accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
+                                    <Select accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
                                         bg: "teal.600",
                                         endIcon: <CheckIcon size="5" />
                                     }} mt={1} onValueChange={value => setObjectModify({ ...objectModify, "client": { ...objectModify.client, "id": value } })}>
@@ -837,7 +999,7 @@ export default function ProjectsCoordinador() {
                             </Stack>
 
                         } />
-                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} action={register} isOpen={false} title={"Cotización del proyecto"} showIcon={true} Form={
+                        <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Cotización del proyecto"} showIcon={true} Form={
                             <Stack mt={3} space={4} w="100%">
                                 <FormControl isRequired>
                                     <FormControl.Label>Presupuesto</FormControl.Label>
@@ -861,6 +1023,7 @@ export default function ProjectsCoordinador() {
                     {isLoadingModify ? <Loading /> : null}
                 </Modal.Body>
             } showModal={modalStart} header={"Iniciar proyecto"} setShowModal={setModalStart} />
+
             <AlertDialogComponent isOpen={showAlertDelete} setIsOpen={setShowAlertDelete} header={"Desactivar personal"} body={"Se desactivará el personal"} action={onDelete} />
             <EnableAlertDialogComponent isOpen={showAlertEnable} setIsOpen={setShowAlertEnable} header={"Activar personal"} body={"Se activará el personal"} action={onEnable} />
         </View>

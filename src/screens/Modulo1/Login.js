@@ -59,7 +59,7 @@ export default function Login(props) {
             }
 
           }
-          formik.resetForm();
+          formik.resetForm
           setRoles(directivo, coordinador, rape, rd)
           setIsLoading(false)
         })
