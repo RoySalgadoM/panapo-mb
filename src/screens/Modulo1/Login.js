@@ -43,15 +43,16 @@ export default function Login(props) {
           formik.resetForm();
           signIn(responseJson.data)
           let authorities = responseJson.data.user.authorities;
+          console.log(authorities)
           let directivo, coordinador, rape, rd;
           for (let i = 0; i < authorities.length; i++) {
             if (authorities[i].authority === "Coordinador") {
               coordinador = true;
             }
-            if (authorities[i].authority == "RAPE") {
+            if (authorities[i].authority === "Responsable de Proyecto") {
               rape = true;
             }
-            if (authorities[i].authority === "RD") {
+            if (authorities[i].authority === "Responsable de Desarrollo") {
               rd = true;
             }
             if (authorities[i].authority === "Directivo") {

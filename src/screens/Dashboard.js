@@ -1,13 +1,20 @@
 import { View, Text } from 'react-native'
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import TableComponent from '../components/TableComponent'
 import { Center, ScrollView, Flex, Divider} from "native-base";
 import {Box } from "native-base";
 import ProgressBarComponent from '../components/ProgressBarComponent';
 import OvalosTextComponent from '../components/OvalosTextComponent';
-
-
+import AlertComponent from '../components/AlertComponent';
 export default function Dashboard(props) {
+  const [changeRol, setChangeRol] = useState(false)
+  useEffect(() => {
+    if(props.route.params?.rol !=undefined){
+      setChangeRol(true)
+    }
+  }, [props.route.params])
+  
+  
   return (
     <View style={{ backgroundColor: "#ffffff" }} alignItems={"center"} >
       
@@ -15,6 +22,7 @@ export default function Dashboard(props) {
         minW: "100%"
       }}>
         <Center>
+        {changeRol ? <AlertComponent isOpen={setChangeRol} status={"success"} title={"Rol cambiado correctamente"} /> : null}
           <Box width="93%" bg="#28a745" p="3" alignItems={"center"} shadow={2} _text={{
             fontSize: "md",
             fontWeight: "bold",

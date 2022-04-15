@@ -43,7 +43,7 @@ import ProjectsRD from './src/screens/projects/ProjectsRD';
 import ProjectsRape from './src/screens/projects/ProjectsRape';
 import Role from './src/screens/Role';
 export default function App({ navigation }) {
-  
+
   const [state, dispatch] = React.useReducer(
     (prevState, action) => {
       switch (action.type) {
@@ -70,11 +70,6 @@ export default function App({ navigation }) {
             rd: null,
             rolSign: null
           };
-          case 'CHANGE':
-          return {
-            ...prevState,
-            userToken: null,
-          };
         case 'COORDINADOR':
           return {
             ...prevState,
@@ -98,10 +93,9 @@ export default function App({ navigation }) {
         case 'ROL_ACTIVE':
           return {
             ...prevState,
-            rolSign: action.rol,
-            userToken:12345
+            rolSign: action.rol
           };
-          
+
       }
     },
     {
@@ -123,12 +117,13 @@ export default function App({ navigation }) {
         console.log(data.user.username)
         dispatch({ type: 'SIGN_IN', token: data.token });
         try {
-          await AsyncStorage.setItem('token',data.token)
-          await AsyncStorage.setItem('username',data.user.username)
-      } catch (e) {
+          await AsyncStorage.setItem('token', data.token)
+          await AsyncStorage.setItem('username', data.user.username)
+
+        } catch (e) {
           console.log(e)
           // error reading value
-      }
+        }
       },
       signOut: async () => {
         dispatch({ type: 'SIGN_OUT', token: null })
@@ -140,43 +135,98 @@ export default function App({ navigation }) {
         try {
           await AsyncStorage.removeItem('token')
           await AsyncStorage.removeItem('username')
-      } catch (e) {
+          await AsyncStorage.removeItem('role')
+          await AsyncStorage.setItem('RD', "false")
+          await AsyncStorage.setItem('RAPE', "false")
+          await AsyncStorage.setItem('COORDINADOR', "false")
+        } catch (e) {
           console.log(e)
           // error reading value
-      }
+        }
       },
       getRoles: () => {
         console.log(state.userToken)
       },
-      setRoles: async(directivo, coordinador, rape, rd) => {
-        if (rape == true) {
+      setRoles: async (directivo, coordinador, rape, rd) => {
+        if (rape) {
           dispatch({ type: 'RAPE', enable: true });
           dispatch({ type: 'ROL_ACTIVE', rol: "RAPE" });
-        } 
-        if(rd == true) {
+          try {
+            await AsyncStorage.setItem('role', "RAPE")
+            await AsyncStorage.setItem('RAPE', "true")
+          } catch (e) {
+            console.log(e)
+            // error reading value
+          }
+        }else{
+          try {
+            await AsyncStorage.setItem('RAPE', "false")
+          } catch (e) {
+            console.log(e)
+          }
+        }
+        if (rd) {
           dispatch({ type: 'RD', enable: true });
           dispatch({ type: 'ROL_ACTIVE', rol: "RD" });
-        } 
-        if (directivo == true) {
+          try {
+            await AsyncStorage.setItem('role', "RD")
+            await AsyncStorage.setItem('RD', "true")
+          } catch (e) {
+            console.log(e)
+            // error reading value
+          }
+        }else{
+          try {
+            await AsyncStorage.setItem('RD', "false")
+          } catch (e) {
+            console.log(e)
+          }
+        }
+        if (directivo) {
           dispatch({ type: 'DIRECTIVO', enable: true });
           dispatch({ type: 'ROL_ACTIVE', rol: "DIRECTIVO" });
+          try {
+            await AsyncStorage.setItem('role', "DIRECTIVO")
+          } catch (e) {
+            console.log(e)
+            // error reading value
+          }
         }
-        if (coordinador == true) {
+        if (coordinador) {
           dispatch({ type: 'COORDINADOR', enable: true });
           dispatch({ type: 'ROL_ACTIVE', rol: "COORDINADOR" });
-        } 
+          try {
+            await AsyncStorage.setItem('role', "COORDINADOR")
+            await AsyncStorage.setItem('COORDINADOR', "true")
+          } catch (e) {
+            console.log(e)
+            // error reading value
+          }
+        }else{
+          try {
+            await AsyncStorage.setItem('COORDINADOR', "false")
+          } catch (e) {
+            console.log(e)
+          }
+        }
       },
-      setRoleActive: (rol) => {
+      setRoleActive: async(rol) => {
         dispatch({ type: 'ROL_ACTIVE', rol: rol });
+        try {
+          await AsyncStorage.setItem('role', rol)
+        } catch (e) {
+          console.log(e)
+          // error reading value
+        }
       }
 
     }),
     []
   );
 
-    React.useEffect(() => {
-    }, [])
-    LogBox.ignoreLogs(['Warning: ...']); //Hide warnings
+  React.useEffect(() => {
+  }, [])
+  LogBox.ignoreLogs(['Warning: ...']); //Hide warnings
 
   return (
     <NativeBaseProvider>
@@ -184,58 +234,58 @@ export default function App({ navigation }) {
 
         <NavigationContainer>
           {state.userToken == null ? (
-              <Stack.Navigator>
-                <Stack.Screen
-                  name="login"
-                  component={Login}
-                  options={{
-                    headerShown: false, hidden: true,
-                    animationTypeForReplace: state.isSignout ? 'pop' : 'push',
-                  }}
-                />
-                <Stack.Screen
-                  name="forgotPassword"
-                  component={ForgotPassword}
-                  options={{
-                    headerShown: false, hidden: true
-                  }}
-                />
-                <Stack.Screen
-                  name="recoverPassword"
-                  component={RecoverPassword}
-                  options={{
-                    headerShown: false, hidden: true
-                  }}
-                />
-              </Stack.Navigator>
-            ) :
+            <Stack.Navigator>
+              <Stack.Screen
+                name="login"
+                component={Login}
+                options={{
+                  headerShown: false, hidden: true,
+                  animationTypeForReplace: state.isSignout ? 'pop' : 'push',
+                }}
+              />
+              <Stack.Screen
+                name="forgotPassword"
+                component={ForgotPassword}
+                options={{
+                  headerShown: false, hidden: true
+                }}
+              />
+              <Stack.Screen
+                name="recoverPassword"
+                component={RecoverPassword}
+                options={{
+                  headerShown: false, hidden: true
+                }}
+              />
+            </Stack.Navigator>
+          ) :
 
-              state.rolSign == "COORDINADOR" ?
+            state.rolSign == "COORDINADOR" ?
+              <Drawer.Navigator initialRouteName='dashboard'>
+                <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
+                <Drawer.Screen name="direction" options={{ title: "Gestión de usuarios de alta dirección" }} component={AltaDireccion} />
+                <Drawer.Screen name="clients" options={{ title: "Gestión de clientes" }} component={Clientes} />
+                <Drawer.Screen name="personal" options={{ title: "Gestión de personal" }} component={Personal} />
+                <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsCoordinador} />
+                <Drawer.Screen name="role" options={{ title: "Mis roles" }} component={Role} />
+              </Drawer.Navigator>
+              : state.rolSign == "DIRECTIVO" ?
                 <Drawer.Navigator initialRouteName='dashboard'>
                   <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
-                  <Drawer.Screen name="direction" options={{ title: "Gestión de usuarios de alta dirección" }} component={AltaDireccion} />
-                  <Drawer.Screen name="clients" options={{ title: "Gestión de clientes" }} component={Clientes} />
-                  <Drawer.Screen name="personal" options={{ title: "Gestión de personal" }} component={Personal} />
-                  <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsCoordinador} />
-                  <Drawer.Screen name="role" options={{ title: "Mis roles" }} component={Role} />
                 </Drawer.Navigator>
-                : state.rolSign == "DIRECTIVO" ?
+                : state.rolSign == "RD" ?
                   <Drawer.Navigator initialRouteName='dashboard'>
                     <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
+                    <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsRD} />
+                    <Drawer.Screen name="role" options={{ title: "Mis roles" }} component={Role} />
                   </Drawer.Navigator>
-                  : state.rolSign == "RD" ?
+                  : state.rolSign == "RAPE" ?
                     <Drawer.Navigator initialRouteName='dashboard'>
                       <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
-                      <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsRD} />
+                      <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsRape} />
                       <Drawer.Screen name="role" options={{ title: "Mis roles" }} component={Role} />
                     </Drawer.Navigator>
-                    : state.rolSign == "RAPE" ?
-                      <Drawer.Navigator initialRouteName='dashboard'>
-                        <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
-                        <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsRape} />
-                        <Drawer.Screen name="role" options={{ title: "Mis roles" }} component={Role} />
-                      </Drawer.Navigator>
-                      : null
+                    : null
           }
         </NavigationContainer>
       </AuthContext.Provider>

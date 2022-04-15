@@ -573,7 +573,7 @@ export default function ProjectsCoordinador() {
             .then(async (responseJson) => {
                 let personal = []
                 for (let i = 0; i < responseJson.data.length; i++) {
-                    if (responseJson.data[i].profession.description === "Docente" || responseJson.data[i].profession.description === "Becario") {
+                    if (responseJson.data[i].profession.description === "Becario") {
                         let exist = false;
                         let tempName = responseJson.data[i].email
                         for (let m = 0; m < addProgrammers.length; m++) {

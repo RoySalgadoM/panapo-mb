@@ -1,21 +1,46 @@
-import React from 'react';
+import React,{useState,useEffect} from 'react';
 import { VStack, Box, Divider, Center, Button, ScrollView, View } from 'native-base';
 import { Icon } from 'react-native-elements';
 import { AuthContext } from '../config/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Role(props) {
-    const {setRoleActive, getRoles } = React.useContext(AuthContext);
+    const {setRoleActive } = React.useContext(AuthContext);
+    const [role, setRole] = useState("")
+    let rol="";
+    let rd="";
+    let rape=""
+    let coordinador=""
+    const [rdGet, setRdGet] = useState("")
+    const [rapeGet, setRapeGet] = useState("")
+    const [coordinadorGet, setCoordinadorGet] = useState("")
 
+    const getRole=async()=>{
+        try {
+            rol = await AsyncStorage.getItem('role');
+            rd = await AsyncStorage.getItem('RD');
+            rape = await AsyncStorage.getItem('RAPE');
+            coordinador = await AsyncStorage.getItem('COORDINADOR');
+            setRole(rol)
+            setRdGet(rd)
+            setCoordinadorGet(coordinador)
+            setRapeGet(rape)
+          } catch (e) {
+            console.log(e)
+          }
+    }
+    getRole()
     const action = (rol) => {
         setRoleActive(rol)
-        props.navigation.navigate("dashboard")
+        props.navigation.navigate("dashboard",{rol:rol})
+        getRole()
     }
     return (
             <View >
                 <ScrollView m={"4"}   _contentContainerStyle={{
                     minW: "100%"
                 }}>
-                    <Center bg={"#049474"}>
+                    {role!="COORDINADOR" && coordinadorGet === "true" ? <Center bg={"#049474"}>
                         <Box px="4" borderBottomColor={"#fff"} pt="4" _text={
                             {
                                 fontSize: "25",
@@ -35,8 +60,8 @@ export default function Role(props) {
                             </Button>
                         </Box>
 
-                    </Center>
-                    <Center bg={"#049474"} mt={"3"}>
+                    </Center>:null}
+                    {role!="RAPE" && rapeGet === "true" ? <Center bg={"#049474"} mt={"3"}>
                         <Box px="4" borderBottomColor={"#fff"} pt="4" _text={
                             {
                                 fontSize: "25",
@@ -56,8 +81,9 @@ export default function Role(props) {
                             </Button>
                         </Box>
 
-                    </Center>
-                    <Center bg={"#049474"} mt={"3"}>
+                    </Center>:null}
+                    
+                    {role!="RD" && rdGet === "true"? <Center bg={"#049474"} mt={"3"}>
                         <Box px="4" borderBottomColor={"#fff"} pt="4" _text={
                             {
                                 fontSize: "25",
@@ -77,7 +103,8 @@ export default function Role(props) {
                             </Button>
                         </Box>
 
-                    </Center>
+                    </Center>:null}
+                    
                 </ScrollView>
             </View>
     )
