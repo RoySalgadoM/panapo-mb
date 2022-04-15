@@ -14,18 +14,16 @@ export default function AlertDialogComponent(props) {
   return (
       <AlertDialog isOpen={isOpen} onClose={onClose}>
         <AlertDialog.Content>
-          <AlertDialog.CloseButton />
-          <AlertDialog.Header bg={"#042B61"}><Text color={"white"}>{header}</Text></AlertDialog.Header>
           <AlertDialog.Body>
               {body}
           </AlertDialog.Body>
           <AlertDialog.Footer>
             <Button.Group space={2}>
-              <Button variant="unstyled" colorScheme="coolGray" onPress={onClose}>
+              <Button  colorScheme="gray" onPress={onClose}>
                 Cancelar
               </Button>
               <Button colorScheme="danger" onPress={submit}>
-                Eliminar
+                Aceptar
               </Button>
             </Button.Group>
           </AlertDialog.Footer>

@@ -9,7 +9,7 @@ export default function ModalComponent(props) {
             <Modal isOpen={showModal} onClose={() => {
                 setShowModal(false)
             }}>
-                <Modal.Content maxWidth="400px">
+                <Modal.Content width={"90%"}>
                     <Modal.Header bg={"#042B61"}><Text color={"white"}>{header}</Text></Modal.Header>
                     <Modal.Body>
                         {content}
@@ -19,9 +19,9 @@ export default function ModalComponent(props) {
                             <Button bg={"#6c757d"} onPress={() => {
                                 setShowModal(false);
                             }}>
-                                <Text color={"white"}>Cancelar</Text>
+                                <Text color={"white"}>Cerrar</Text>
                             </Button>
-                            {showButtonConfirm ? <Text></Text> : <Button bg={"#042B61"} onPress={formik.handleSubmit}>
+                            {showButtonConfirm ? <Text></Text> : <Button bg={"#042B61"} onPress={formik.handleSubmit} disabled={!(formik.isValid && formik.dirty)}>
                                 <Text color={"white"}>Confirmar</Text>
                             </Button>}
                             

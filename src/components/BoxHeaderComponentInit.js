@@ -2,7 +2,8 @@ import { View, Text, StyleSheet } from 'react-native'
 import React, { useState } from 'react'
 import { Flex, Box, PresenceTransition, IconButton, MinusIcon, AddIcon, Button } from "native-base";
 
-export default function BoxHeaderComponent(props) {
+
+export default function BoxHeaderComponentInit(props) {
     const { title, showIcon, Form, isOpen,bgColor, fontColor } = props;
     const [isShow, setIsShow] = useState(isOpen)
     const change = () => {
@@ -10,13 +11,14 @@ export default function BoxHeaderComponent(props) {
     }
     return (
         <View style={styles.container}>
-            <Box width="100%"  p="2" borderBottomColor={"#042b61"} shadow={2} _text={{
+            <Box width="100%" bg={bgColor} borderBottomColor={"#042b61"} p="2" shadow={2} _text={{
                 fontSize: "sm",
-                color: "red"
+                fontWeight: "bold",
+                color: "white"
             }}>
                 <Flex direction="row" mt="1.5">
                     <View width={"80%"}>
-                        <Text style={{ color: "black", fontSize: 17 }} >{title}</Text>
+                        <Text style={{ color: fontColor, fontSize: 17 }} >{title}</Text>
                     </View>
 
                     <View width={"20%"} style={styles.end}>
@@ -33,7 +35,7 @@ export default function BoxHeaderComponent(props) {
                                             duration: 1000
                                         }
                                     }}>
-                                        <IconButton onPress={change} icon={<MinusIcon on size="4" mt="0.5" color={"black"} />} variant="ghost" _icon={{
+                                        <IconButton onPress={change} icon={<MinusIcon on size="4" mt="0.5" color={fontColor} />} variant="ghost" _icon={{
                                         }} />
                                     </PresenceTransition>
                                     :
@@ -47,7 +49,7 @@ export default function BoxHeaderComponent(props) {
                                             duration: 1000
                                         }
                                     }}>
-                                        <IconButton onPress={change} icon={<AddIcon on size="4" mt="0.5" color={"grey"} />} variant="ghost" _icon={{
+                                        <IconButton onPress={change} icon={<AddIcon on size="4" mt="0.5" color={fontColor} />} variant="ghost" _icon={{
                                         }} />
                                     </PresenceTransition>
                                 :
@@ -85,6 +87,7 @@ export default function BoxHeaderComponent(props) {
 
 const styles = StyleSheet.create({
     container: {
+        padding: 16,
         paddingTop: 30,
         backgroundColor: '#ffffff'
     },

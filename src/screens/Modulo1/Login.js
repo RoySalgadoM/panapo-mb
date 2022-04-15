@@ -1,5 +1,5 @@
-import { StyleSheet } from 'react-native'
-import React, { useState, } from 'react'
+import { StyleSheet , NativeModules} from 'react-native'
+import React, { useState } from 'react'
 import { Center, Heading, Box, VStack, Image, FormControl, Input, Link, HStack, Button, Text } from "native-base";
 import STYLES from '../../styles';
 import AlertComponent from "../../components/AlertComponent"
@@ -25,7 +25,7 @@ export default function Login(props) {
     },
     validationSchema: yup.object().shape({
       password: yup.string().required("Campo obligatorio"),
-      username: yup.string().required("Campo obligatorio")
+      username: yup.string().email('Ingresa un correo válido').required("Campo obligatorio")
     }),
     onSubmit: (values) => {
       setIsLoading(true)
@@ -73,11 +73,11 @@ export default function Login(props) {
   const goToForgot = () => {
     props.navigation.navigate("forgotPassword")
   }
-
+ 
   return (
     <Center flexDirection={"column"} alignItems={"center"} style={[STYLES.backBlue, styles.height100, STYLES.fontWhite]}>
       <Center w="90%" bg={"white"}>
-        {errorAlert ? <AlertComponent isOpen={setErrorAlert} status={"error"} title={"Contraseña o usuario incorrecto"} /> : null}
+        {errorAlert ? <AlertComponent isOpen={setErrorAlert} status={"error"} title={"Usuario y/o contraseña incorrectos"} /> : null}
         {errorAlertBlank ? <AlertComponent isOpen={setErrorAlertBlank} status={"error"} title={"Primero llena todos los campos"} /> : null}
         <Image mt={"2"} source={{
           uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzvJ2rH4GkrSgqsGL9BU0s4Z4jm-aZ7XuT6RFNc1bZ4CawW2JDXJw6GzC7rE23m_7ry80&usqp=CAU"
@@ -91,7 +91,7 @@ export default function Login(props) {
           <VStack ml={"3"} mr={"3"} space={3} mt="5">
             <FormControl >
               <FormControl.Label>Correo electrónico</FormControl.Label>
-              <Input onChangeText={formik.handleChange('username')}
+              <Input keyboardType='email-address' onChangeText={formik.handleChange('username')}
                 onBlur={formik.handleBlur('username')}
                 value={formik.values.username} type='email' />
               {formik.errors.username ? (

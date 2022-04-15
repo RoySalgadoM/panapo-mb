@@ -9,7 +9,7 @@ export default function FilterComponent({filterText, setFilterText,onFilter}) {
             <Input type='text' onChangeText={value => {
                 setFilterText(value)
                 onFilter
-        }} placeholder='Ingrese el nombre o apellido del directivo' />
+        }} placeholder='Buscar' />
         </FormControl>
     )
 }

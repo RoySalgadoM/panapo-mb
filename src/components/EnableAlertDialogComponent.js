@@ -14,8 +14,6 @@ export default function EnableAlertDialogComponent(props) {
   return (
       <AlertDialog isOpen={isOpen} onClose={onClose}>
         <AlertDialog.Content>
-          <AlertDialog.CloseButton />
-          <AlertDialog.Header bg={"#218838"}><Text color={"white"}>{header}</Text></AlertDialog.Header>
           <AlertDialog.Body>
               {body}
           </AlertDialog.Body>

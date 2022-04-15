@@ -13,6 +13,9 @@ import Loading from '../components/Loading';
 import EnableAlertDialogComponent from '../components/EnableAlertDialogComponent';
 import * as yup from "yup";
 import { useFormik } from "formik";
+import RNDateTimePicker from '@react-native-community/datetimepicker';
+import BoxHeaderComponentInit from '../components/BoxHeaderComponentInit';
+
 
 export default function Personal() {
     const [showModal, setShowModal] = useState(false);
@@ -32,7 +35,8 @@ export default function Personal() {
     const [showModalInfo, setShowModalInfo] = useState(false)
     const [showAlertEnable, setShowAlertEnable] = useState(false)
     const [refreshing, setRefreshing] = React.useState(false);
-
+    const [dateRegister, setDateRegister] = useState(false)
+    const [dateModify, setDateModify] = useState(false)
     const onRefresh = React.useCallback(() => {
         setRefreshing(true);
         getAll()
@@ -83,11 +87,56 @@ export default function Personal() {
                     setIsOpenAlertRegister(true)
                     getAll()
                     setIsLoadingRegister(false)
-                    formikRegister.resetForm
+                    formikRegister.resetForm();
                 })
         },
     });
 
+    const showDateRegister = () => {
+        setDateRegister(true)
+    }
+    const setDateR = (event, date) => {
+        if (date === undefined) {
+            setDateRegister(false)
+        } else {
+            let dateFormat = new Date(date);
+            let year = dateFormat.getFullYear();
+            let day = dateFormat.getDate();
+            if (day < 10) day = `0${day}`
+            let month = dateFormat.getMonth();
+            month = month+1;
+            if (month < 10) month = `0${month}`
+            let finalDate = `${year}-${month}-${day}`
+            formikRegister.values.dateBirth = finalDate;
+            formikRegister.handleChange
+            formikRegister.handleBlur
+            setDateRegister(false)
+        }
+
+    }
+
+    const showDateModify = () => {
+        setDateModify(true)
+    }
+    const setDateM = (event, date) => {
+        if (date === undefined) {
+            setDateModify(false)
+        } else {
+            let dateFormat = new Date(date);
+            let year = dateFormat.getFullYear();
+            let day = dateFormat.getDate();
+            if (day < 10) day = `0${day}`
+            let month = dateFormat.getMonth();
+            month = month+1;
+            if (month < 10) month = `0${month}`
+            let finalDate = `${year}-${month}-${day}`
+            formikModify.values.dateBirth = finalDate;
+            formikModify.handleChange
+            formikModify.handleBlur
+            setDateModify(false)
+        }
+
+    }
     const formikModify = useFormik({
         initialValues: {
             name: "",
@@ -223,19 +272,20 @@ export default function Personal() {
         })
             .then(async (response) => await response.json(response))
             .then(async (responseJson) => {
-                
+
                 let tempData = []
+                let cont=0;
                 for (let i = 0; i < responseJson.data.length; i++) {
                     if (responseJson.data[i].profession.description != "Directivo") {
-                        
+                        cont++;
                         let newData = [
-                            responseJson.data[i].id, `${responseJson.data[i].name} ${responseJson.data[i].surname} ${responseJson.data[i].secondSurname}`, responseJson.data[i].email
+                            cont, `${responseJson.data[i].name} ${responseJson.data[i].surname} ${responseJson.data[i].secondSurname}`, responseJson.data[i].email,responseJson.data[i].profession.description
                             , <ActionsButtons name={"info"} action={() => {
                                 setShowModalInfo(true)
                                 setObjectModify(responseJson.data[i])
-                            }} color={"white"} bgColor={"#17a2b8"} />,
+                            }} color={"white"} bgColor={"#0b5ed7"} />,
                             <ActionsButtons action={() => {
-                                
+
                                 setObjectModify(responseJson.data[i])
                                 formikModify.values.profession = responseJson.data[i].profession.id
                                 formikModify.resetForm
@@ -248,7 +298,7 @@ export default function Personal() {
                                 formikModify.handleBlur
                                 setShowModal(true)
                             }} name={"edit"} color={"black"} bgColor={"#ffc107"} />,
-                            responseJson.data[i].status.id == 1 ? <ActionsButtons name={"trash"} action={() => {
+                            responseJson.data[i].status.id == 1 ? <ActionsButtons name={"ban"} action={() => {
                                 setShowAlertDelete(true)
                                 setObjectModify(responseJson.data[i])
                             }} color={"white"} bgColor={"#dc3545"} /> : <ActionsButtons name={"check-circle"} action={() => {
@@ -281,14 +331,14 @@ export default function Personal() {
             {isOpenAlertRegister ? <AlertComponent isOpen={setIsOpenAlertRegister} status={"success"} title={"Personal registrado correctamente"} /> : null}
             {isOpenAlertErrorRegister ? <AlertComponent isOpen={setIsOpenAlertErrorRegister} status={"error"} title={"Rellene todos los campos primero"} /> : null}
             <ScrollView refreshControl={<RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />}
-            _contentContainerStyle={{
-                minW: "100%"
-            }}>
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+            />}
+                _contentContainerStyle={{
+                    minW: "100%"
+                }}>
 
-                <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} formik={formikRegister} isOpen={false} title={"Registrar personal"} showIcon={true} Form={
+                <BoxHeaderComponentInit fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} formik={formikRegister} isOpen={false} title={"Registrar personal"} showIcon={true} Form={
 
                     <Stack mt={3} space={4} w="100%">
                         <FormControl isRequired>
@@ -331,13 +381,16 @@ export default function Personal() {
                                 onBlur={formikRegister.handleBlur('dateBirth')}
                                 value={formikRegister.values.dateBirth}
                                 placeholder='Ejemplo: 2002-06-21' />
+                            {dateRegister ? <RNDateTimePicker mode='datetime' onChange={setDateR} value={formikRegister.values.dateBirth != "" ? new Date(formikRegister.values.dateBirth)  : new Date()} /> : null}
+                            <Button bg="#042b61" onPress={showDateRegister}>Elegir fecha</Button>
+
                             {formikRegister.errors.dateBirth ? (
                                 <Text color={"#FF0000"}>{formikRegister.errors.dateBirth}</Text>
                             ) : null}
                         </FormControl>
                         <FormControl isRequired>
                             <FormControl.Label>Correo eléctronico</FormControl.Label>
-                            <Input type='email'
+                            <Input keyboardType='email-address' type='email'
                                 onChangeText={formikRegister.handleChange('email')}
                                 onBlur={formikRegister.handleBlur('email')}
                                 value={formikRegister.values.email}
@@ -348,7 +401,7 @@ export default function Personal() {
                         </FormControl>
                         <FormControl isRequired>
                             <FormControl.Label>Teléfono</FormControl.Label>
-                            <Input type='number'
+                            <Input keyboardType='phone-pad' type='number'
                                 onChangeText={formikRegister.handleChange('phone')}
                                 onBlur={formikRegister.handleBlur('phone')}
                                 value={formikRegister.values.phone}
@@ -381,8 +434,8 @@ export default function Personal() {
                 {isOpenAlertModify ? <AlertComponent isOpen={setIsOpenAlertModify} status={"success"} title={"Personal modificado correctamente"} /> : null}
                 <TableComponent isLoadingTable={isLoadingTable} setisLoadingTable={setisLoadingTable} isOpen={true} title={"Personal registrado"}
                     isSearch={true}
-                    tableHead={['#', 'Nombre completo', 'Correo', 'Detalles', 'Modificar', 'Acción']}
-                    widthArr={[40, 180, 200, 150, 120, 120]}
+                    tableHead={['#', 'Nombre completo', 'Correo', 'Rol', 'Detalles', 'Modificar', 'Acción']}
+                    widthArr={[40, 180, 200, 180, 150, 120, 120]}
                     data={data}
                 />
             </ScrollView>
@@ -425,18 +478,20 @@ export default function Personal() {
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Fecha de nacimiento</FormControl.Label>
-                        <Input type='date'
+                        <Input isDisabled type='date'
                             onChangeText={formikModify.handleChange('dateBirth')}
                             onBlur={formikModify.handleBlur('dateBirth')}
                             value={formikModify.values.dateBirth}
                             placeholder='Ejemplo: 2002-06-21' />
+                            {dateModify ? <RNDateTimePicker mode='datetime' onChange={setDateM} value={formikModify.values.dateBirth != "" ? new Date(formikModify.values.dateBirth)  : new Date()} /> : null}
+                            <Button bg="#042b61" onPress={showDateModify}>Elegir fecha</Button>
                         {formikModify.errors.dateBirth ? (
                             <Text color={"#FF0000"}>{formikModify.errors.dateBirth}</Text>
                         ) : null}
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Teléfono</FormControl.Label>
-                        <Input type='number'
+                        <Input keyboardType='phone-pad' type='number'
                             onChangeText={formikModify.handleChange('phone')}
                             onBlur={formikModify.handleBlur('phone')}
                             value={formikModify.values.phone}
@@ -447,7 +502,7 @@ export default function Personal() {
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Rol</FormControl.Label>
-                        <Select  onBlur={formikModify.handleBlur('profession')} onValueChange={formikModify.handleChange('profession')} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
+                        <Select onBlur={formikModify.handleBlur('profession')} onValueChange={formikModify.handleChange('profession')} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
                             bg: "teal.600",
                             endIcon: <CheckIcon size="5" />
                         }} mt={1} selectedValue={`${formikModify.values.profession}`}>
@@ -460,7 +515,7 @@ export default function Personal() {
                     </FormControl>
                     {isLoadingModify ? <Loading /> : null}
                 </Modal.Body>
-            } showModal={showModal} header={"Modificar directivo"} setShowModal={setShowModal} />
+            } showModal={showModal} header={"Modificar personal"} setShowModal={setShowModal} />
 
 
             <ModalComponent showButtonConfirm={true} content={
@@ -476,6 +531,10 @@ export default function Personal() {
                     <FormControl isDisabled isRequired>
                         <FormControl.Label>Segundo apellido</FormControl.Label>
                         <Input type='text' value={objectModify.secondSurname} onChangeText={value => setObjectModify({ ...objectModify, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
+                    </FormControl>
+                    <FormControl isDisabled isRequired>
+                        <FormControl.Label>Correo electrónico</FormControl.Label>
+                        <Input type='text' value={objectModify.email} onChangeText={value => setObjectModify({ ...objectModify, ["secondSurname"]: value })} placeholder='Ejemplo: Díaz' />
                     </FormControl>
                     <FormControl isDisabled isRequired>
                         <FormControl.Label>Fecha de nacimiento</FormControl.Label>
@@ -498,8 +557,8 @@ export default function Personal() {
                     {isLoadingModify ? <Loading /> : null}
                 </Modal.Body>
             } showModal={showModalInfo} header={"Detalles del personal"} setShowModal={setShowModalInfo} />
-            <AlertDialogComponent isOpen={showAlertDelete} setIsOpen={setShowAlertDelete} header={"Desactivar personal"} body={"Se desactivará el personal"} action={onDelete} />
-            <EnableAlertDialogComponent isOpen={showAlertEnable} setIsOpen={setShowAlertEnable} header={"Activar personal"} body={"Se activará el personal"} action={onEnable} />
+            <AlertDialogComponent isOpen={showAlertDelete} setIsOpen={setShowAlertDelete} header={"Desactivar personal"} body={"¿Está seguro de realizar la acción solicitada?"} action={onDelete} />
+            <AlertDialogComponent isOpen={showAlertEnable} setIsOpen={setShowAlertEnable} header={"Activar personal"} body={"¿Está seguro de realizar la acción solicitada?"} action={onEnable} />
         </View>
     )
 }

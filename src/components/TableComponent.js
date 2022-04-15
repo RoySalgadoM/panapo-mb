@@ -121,7 +121,7 @@ export default function TableComponent(props) {
                                 {isLoadingTable ? <Loading /> :
                                     <Table style={styles.h100} borderStyle={{ borderColor: '#C1C0B9' }}>
                                         <Row data={tableHead} widthArr={widthArr} textStyle={styles.text} style={[styles.head, styles.textBold]} />
-                                        {filteredItems=="" ? <AlertComponent isOpen={true} status={"error"} title={"No hay datos existentes"} />
+                                        {filteredItems=="" ? <AlertComponent isOpen={true} status={"error"} title={"No hay registros existentes"} />
                                             : 
                                             <Rows
                                                 data={filteredItems}

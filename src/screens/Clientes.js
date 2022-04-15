@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loading from '../components/Loading';
 import * as yup from "yup";
 import { useFormik } from "formik";
+import BoxHeaderComponentInit from '../components/BoxHeaderComponentInit';
 
 export default function Clientes() {
     const [showModal, setShowModal] = useState(false);
@@ -92,7 +93,7 @@ export default function Clientes() {
                     setIsOpenAlertRegister(true)
                     getAll()
                     setIsLoadingRegister(false)
-                    formikRegister.resetForm
+                    formikRegister.resetForm();
                 })
         },
     });
@@ -128,7 +129,7 @@ export default function Clientes() {
                 extension: values.extension,
                 phoneClient: values.phoneClient,
                 nameRepre: values.nameRepre,
-                surnameRepre:values.surnameRepre,
+                surnameRepre: values.surnameRepre,
                 secondSurnameRepre: values.secondSurnameRepre,
                 phoneRepre: values.phoneRepre,
                 emailRepre: values.emailRepre
@@ -191,7 +192,7 @@ export default function Clientes() {
                         , <ActionsButtons name={"info"} action={() => {
                             setShowModalInfo(true)
                             setObjectModify(responseJson.data[i])
-                        }} color={"white"} bgColor={"#17a2b8"} />,
+                        }} color={"white"} bgColor={"#0b5ed7"} />,
                         <ActionsButtons action={() => {
                             setShowModal(true)
                             setObjectModify(responseJson.data[i])
@@ -227,21 +228,21 @@ export default function Clientes() {
             {isOpenAlertRegister ? <AlertComponent isOpen={setIsOpenAlertRegister} status={"success"} title={"Cliente registrado correctamente"} /> : null}
             {isOpenAlertErrorRegister ? <AlertComponent isOpen={setIsOpenAlertErrorRegister} status={"error"} title={"Rellene todos los campos primero"} /> : null}
             <ScrollView refreshControl={<RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />}
-             _contentContainerStyle={{
-                minW: "100%"
-            }}>
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+            />}
+                _contentContainerStyle={{
+                    minW: "100%"
+                }}>
 
-                <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} isOpen={false} title={"Registrar clientes"} showIcon={true} Form={
+                <BoxHeaderComponentInit fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} isOpen={false} title={"Registrar clientes"} showIcon={true} Form={
 
                     <Center>
                         <Stack mt={3} space={4} w="100%">
                             <BoxHeaderComponent fontColor={"#000"} bgColor={"#ffffff"} isButton={false} isOpen={false} title={"Datos del cliente"} showIcon={true} Form={
                                 <Center>
                                     <FormControl isRequired>
-                                        <FormControl.Label>Nombre</FormControl.Label>
+                                        <FormControl.Label>Nombre(s)</FormControl.Label>
                                         <Input
                                             onChangeText={formikRegister.handleChange('name')}
                                             onBlur={formikRegister.handleBlur('name')}
@@ -274,19 +275,32 @@ export default function Clientes() {
                                         ) : null}
                                     </FormControl>
                                     <FormControl isRequired>
-                                        <FormControl.Label>Nombre de la empresa</FormControl.Label>
-                                        <Input type='text'
-                                            onChangeText={formikRegister.handleChange('company')}
-                                            onBlur={formikRegister.handleBlur('company')}
-                                            value={formikRegister.values.company}
-                                            placeholder='Ejemplo: NISSAN' />
-                                        {formikRegister.errors.company ? (
-                                            <Text color={"#FF0000"}>{formikRegister.errors.company}</Text>
+                                        <FormControl.Label>Correo electrónico</FormControl.Label>
+                                        <Input keyboardType='email-address' type='email'
+                                            onChangeText={formikRegister.handleChange('emailClient')}
+                                            onBlur={formikRegister.handleBlur('emailClient')}
+                                            value={formikRegister.values.emailClient}
+                                            placeholder='Ejemplo: utez@utez.edu.mx' />
+                                        {formikRegister.errors.emailClient ? (
+                                            <Text color={"#FF0000"}>{formikRegister.errors.emailClient}</Text>
                                         ) : null}
+                                    </FormControl>
+
+                                    <FormControl isRequired>
+                                        <FormControl.Label>Teléfono</FormControl.Label>
+                                        <Input keyboardType='phone-pad' type='number'
+                                            onChangeText={formikRegister.handleChange('phoneClient')}
+                                            onBlur={formikRegister.handleBlur('phoneClient')}
+                                            value={formikRegister.values.phoneClient}
+                                            placeholder='Ejemplo: 7771265498' />
+                                        {formikRegister.errors.phoneClient ? (
+                                            <Text color={"#FF0000"}>{formikRegister.errors.phoneClient}</Text>
+                                        ) : null}
+
                                     </FormControl>
                                     <FormControl isRequired>
                                         <FormControl.Label>Extensión</FormControl.Label>
-                                        <Input type='number'
+                                        <Input keyboardType='numeric' type='number'
                                             onChangeText={formikRegister.handleChange('extension')}
                                             onBlur={formikRegister.handleBlur('extension')}
                                             value={formikRegister.values.extension}
@@ -297,30 +311,17 @@ export default function Clientes() {
 
                                     </FormControl>
                                     <FormControl isRequired>
-                                        <FormControl.Label>Teléfono</FormControl.Label>
-                                        <Input type='number'
-                                            onChangeText={formikRegister.handleChange('phoneClient')}
-                                            onBlur={formikRegister.handleBlur('phoneClient')}
-                                            value={formikRegister.values.phoneClient}
-                                            placeholder='Ejemplo: 7775698741' />
-                                        {formikRegister.errors.phoneClient ? (
-                                            <Text color={"#FF0000"}>{formikRegister.errors.phoneClient}</Text>
-                                        ) : null}
-
-                                    </FormControl>
-
-
-                                    <FormControl isRequired>
-                                        <FormControl.Label>Correo electrónico</FormControl.Label>
-                                        <Input type='email'
-                                            onChangeText={formikRegister.handleChange('emailClient')}
-                                            onBlur={formikRegister.handleBlur('emailClient')}
-                                            value={formikRegister.values.emailClient}
-                                            placeholder='Ejemplo: Email' />
-                                        {formikRegister.errors.emailClient ? (
-                                            <Text color={"#FF0000"}>{formikRegister.errors.emailClient}</Text>
+                                        <FormControl.Label>Nombre de la empresa</FormControl.Label>
+                                        <Input type='text'
+                                            onChangeText={formikRegister.handleChange('company')}
+                                            onBlur={formikRegister.handleBlur('company')}
+                                            value={formikRegister.values.company}
+                                            placeholder='Ejemplo: NISSAN' />
+                                        {formikRegister.errors.company ? (
+                                            <Text color={"#FF0000"}>{formikRegister.errors.company}</Text>
                                         ) : null}
                                     </FormControl>
+                                    
                                     <FormControl isRequired>
                                         <FormControl.Label>Tipo de cliente</FormControl.Label>
                                         <Select selectedValue={formikRegister.values.typeClient} onBlur={formikRegister.handleBlur('typeClient')} onValueChange={formikRegister.handleChange('typeClient')} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
@@ -341,7 +342,7 @@ export default function Clientes() {
                             <BoxHeaderComponent fontColor={"#000"} bgColor={"#ffffff"} isButton={false} isOpen={false} title={"Datos del representante del cliente"} showIcon={true} Form={
                                 <Center>
                                     <FormControl isRequired>
-                                        <FormControl.Label>Nombre</FormControl.Label>
+                                        <FormControl.Label>Nombre(s)</FormControl.Label>
                                         <Input
                                             onChangeText={formikRegister.handleChange('nameRepre')}
                                             onBlur={formikRegister.handleBlur('nameRepre')}
@@ -375,7 +376,7 @@ export default function Clientes() {
                                     </FormControl>
                                     <FormControl isRequired>
                                         <FormControl.Label>Teléfono</FormControl.Label>
-                                        <Input type='number'
+                                        <Input keyboardType='phone-pad' type='number'
                                             onChangeText={formikRegister.handleChange('phoneRepre')}
                                             onBlur={formikRegister.handleBlur('phoneRepre')}
                                             value={formikRegister.values.phoneRepre}
@@ -386,7 +387,7 @@ export default function Clientes() {
                                     </FormControl>
                                     <FormControl isRequired>
                                         <FormControl.Label>Correo electrónico</FormControl.Label>
-                                        <Input type='email'
+                                        <Input keyboardType='email-address' type='email'
                                             onChangeText={formikRegister.handleChange('emailRepre')}
                                             onBlur={formikRegister.handleBlur('emailRepre')}
                                             value={formikRegister.values.emailRepre}
@@ -415,7 +416,7 @@ export default function Clientes() {
                 {isOpenAlertModify ? <AlertComponent isOpen={setIsOpenAlertModify} status={"success"} title={"Cliente modificado correctamente"} /> : null}
                 <TableComponent isLoadingTable={isLoadingTable} setisLoadingTable={setisLoadingTable} isOpen={true} title={"Clientes registrados"}
                     isSearch={true}
-                    tableHead={['#', 'Nombre completo', 'Nombre de la empresa', 'Tipo del cliente', 'Detalles', 'Modificar']}
+                    tableHead={['#', 'Nombre completo', 'Nombre de la empresa', 'Tipo de cliente', 'Detalles', 'Modificar']}
                     widthArr={[40, 180, 200, 150, 120, 120]}
                     data={data}
                 />
@@ -425,19 +426,19 @@ export default function Clientes() {
                     {errorModify ? <AlertComponent isOpen={setErrorModify} status={"error"} title={"Rellene todos los campos primero"} /> : null}
                     {equalsPassword ? <AlertComponent isOpen={setEqualsPassword} status={"error"} title={"Las contraseñas no son iguales"} /> : null}
                     <FormControl isRequired>
-                        <FormControl.Label>Extensión</FormControl.Label>
-                        <Input type='number'
-                            onChangeText={formikModify.handleChange('extension')}
-                            onBlur={formikModify.handleBlur('extension')}
-                            value={formikModify.values.extension}
-                            placeholder='Ejemplo: 416' />
-                        {formikModify.errors.extension ? (
-                            <Text color={"#FF0000"}>{formikModify.errors.extension}</Text>
+                        <FormControl.Label>Correo electrónico</FormControl.Label>
+                        <Input keyboardType='email-address' type='email'
+                            onChangeText={formikModify.handleChange('emailClient')}
+                            onBlur={formikModify.handleBlur('emailClient')}
+                            value={formikModify.values.emailClient}
+                            placeholder='Ejemplo: Email' />
+                        {formikModify.errors.emailClient ? (
+                            <Text color={"#FF0000"}>{formikModify.errors.emailClient}</Text>
                         ) : null}
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Teléfono</FormControl.Label>
-                        <Input type='number'
+                        <Input keyboardType='phone-pad' type='number'
                             onChangeText={formikModify.handleChange('phoneClient')}
                             onBlur={formikModify.handleBlur('phoneClient')}
                             value={formikModify.values.phoneClient}
@@ -448,19 +449,21 @@ export default function Clientes() {
 
                     </FormControl>
                     <FormControl isRequired>
-                        <FormControl.Label>Correo electrónico</FormControl.Label>
-                        <Input type='email'
-                            onChangeText={formikModify.handleChange('emailClient')}
-                            onBlur={formikModify.handleBlur('emailClient')}
-                            value={formikModify.values.emailClient}
-                            placeholder='Ejemplo: Email' />
-                        {formikModify.errors.emailClient ? (
-                            <Text color={"#FF0000"}>{formikModify.errors.emailClient}</Text>
+                        <FormControl.Label>Extensión</FormControl.Label>
+                        <Input keyboardType='numeric' type='number'
+                            onChangeText={formikModify.handleChange('extension')}
+                            onBlur={formikModify.handleBlur('extension')}
+                            value={formikModify.values.extension}
+                            placeholder='Ejemplo: 416' />
+                        {formikModify.errors.extension ? (
+                            <Text color={"#FF0000"}>{formikModify.errors.extension}</Text>
                         ) : null}
                     </FormControl>
+
+                    
                     <Text style={{ fontWeight: "bold" }}>Información del representante del cliente</Text>
                     <FormControl isRequired>
-                        <FormControl.Label>Nombre</FormControl.Label>
+                        <FormControl.Label>Nombre(s)</FormControl.Label>
                         <Input
                             onChangeText={formikModify.handleChange('nameRepre')}
                             onBlur={formikModify.handleBlur('nameRepre')}
@@ -494,7 +497,7 @@ export default function Clientes() {
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Teléfono</FormControl.Label>
-                        <Input type='number'
+                        <Input keyboardType='phone-pad' type='number'
                             onChangeText={formikModify.handleChange('phoneRepre')}
                             onBlur={formikModify.handleBlur('phoneRepre')}
                             value={formikModify.values.phoneRepre}
@@ -505,7 +508,7 @@ export default function Clientes() {
                     </FormControl>
                     <FormControl isRequired>
                         <FormControl.Label>Correo electrónico</FormControl.Label>
-                        <Input type='email'
+                        <Input keyboardType='email-address' type='email'
                             onChangeText={formikModify.handleChange('emailRepre')}
                             onBlur={formikModify.handleBlur('emailRepre')}
                             value={formikModify.values.emailRepre}
@@ -516,27 +519,48 @@ export default function Clientes() {
                     </FormControl>
                     {isLoadingModify ? <Loading /> : null}
                 </Modal.Body>
-            } showModal={showModal} header={"Modificar directivo"} setShowModal={setShowModal} />
+            } showModal={showModal} header={"Modificar cliente"} setShowModal={setShowModal} />
 
 
 
             <ModalComponent showButtonConfirm={true} content={
                 <Modal.Body>
                     <FormControl isDisabled isRequired>
-                        <FormControl.Label>Extensión</FormControl.Label>
-                        <Input type='number' value={objectModify.extension} onChangeText={value => setObjectModify({ ...objectModify, ["extension"]: value })} placeholder='Ejemplo: 7771144520' />
+                        <FormControl.Label>Nombre(s)</FormControl.Label>
+                        <Input value={objectModify.name} onChangeText={value => setObjectModify({ ...objectModify, ["nameRepre"]: value })} type='text' placeholder='Ejemplo: María' />
+                    </FormControl>
+                    <FormControl isRequired isDisabled>
+                        <FormControl.Label>Primer apellido</FormControl.Label>
+                        <Input value={objectModify.surname} type='text' onChangeText={value => setObjectModify({ ...objectModify, ["surnameRepre"]: value })} placeholder='Ejemplo: Valdez' />
+                    </FormControl>
+                    <FormControl isDisabled isRequired>
+                        <FormControl.Label>Segundo apellido</FormControl.Label>
+                        <Input type='text' value={objectModify.secondSurname} onChangeText={value => setObjectModify({ ...objectModify, ["secondSurnameRepre"]: value })} placeholder='Ejemplo: Díaz' />
+                    </FormControl>
+                    <FormControl isDisabled isRequired>
+                        <FormControl.Label>Correo electrónico</FormControl.Label>
+                        <Input type='text' value={objectModify.emailClient} onChangeText={value => setObjectModify({ ...objectModify, ["secondSurnameRepre"]: value })} placeholder='Ejemplo: Díaz' />
                     </FormControl>
                     <FormControl isDisabled isRequired>
                         <FormControl.Label>Teléfono</FormControl.Label>
                         <Input type='number' value={objectModify.phoneClient} onChangeText={value => setObjectModify({ ...objectModify, ["phoneClient"]: value })} placeholder='Ejemplo: 7771144520' />
                     </FormControl>
                     <FormControl isDisabled isRequired>
-                        <FormControl.Label>Correo electrónico</FormControl.Label>
-                        <Input type='email' value={objectModify.emailClient} onChangeText={value => setObjectModify({ ...objectModify, ["emailClient"]: value })} placeholder='Ejemplo: Email' />
+                        <FormControl.Label>Extensión</FormControl.Label>
+                        <Input type='number' value={objectModify.extension} onChangeText={value => setObjectModify({ ...objectModify, ["extension"]: value })} placeholder='Ejemplo: 7771144520' />
+                    </FormControl>
+                    
+                    <FormControl isDisabled isRequired>
+                        <FormControl.Label>Empresa</FormControl.Label>
+                        <Input type='text' value={objectModify.company} onChangeText={value => setObjectModify({ ...objectModify, ["emailClient"]: value })} placeholder='Ejemplo: Email' />
+                    </FormControl>
+                    <FormControl isDisabled isRequired>
+                        <FormControl.Label>Tipo de cliente</FormControl.Label>
+                        <Input type='text' value={ objectModify.typeClient?.description} onChangeText={value => setObjectModify({ ...objectModify, ["phoneClient"]: value })} placeholder='Ejemplo: 7771144520' />
                     </FormControl>
                     <Text style={{ fontWeight: "bold" }}>Información del representante del cliente</Text>
                     <FormControl isDisabled isRequired>
-                        <FormControl.Label>Nombre</FormControl.Label>
+                        <FormControl.Label>Nombre(s)</FormControl.Label>
                         <Input value={objectModify.nameRepre} onChangeText={value => setObjectModify({ ...objectModify, ["nameRepre"]: value })} type='text' placeholder='Ejemplo: María' />
                     </FormControl>
                     <FormControl isRequired isDisabled>

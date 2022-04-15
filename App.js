@@ -41,8 +41,9 @@ import Personal from './src/screens/Personal';
 import ProjectsCoordinador from './src/screens/projects/ProjectsCoordinador';
 import ProjectsRD from './src/screens/projects/ProjectsRD';
 import ProjectsRape from './src/screens/projects/ProjectsRape';
+import Role from './src/screens/Role';
 export default function App({ navigation }) {
-
+  
   const [state, dispatch] = React.useReducer(
     (prevState, action) => {
       switch (action.type) {
@@ -63,11 +64,16 @@ export default function App({ navigation }) {
             ...prevState,
             isSignout: true,
             userToken: null,
-            directior: null,
+            directivo: null,
             coordinador: null,
             rape: null,
             rd: null,
             rolSign: null
+          };
+          case 'CHANGE':
+          return {
+            ...prevState,
+            userToken: null,
           };
         case 'COORDINADOR':
           return {
@@ -92,7 +98,8 @@ export default function App({ navigation }) {
         case 'ROL_ACTIVE':
           return {
             ...prevState,
-            rolSign: action.rol
+            rolSign: action.rol,
+            userToken:12345
           };
           
       }
@@ -139,7 +146,7 @@ export default function App({ navigation }) {
       }
       },
       getRoles: () => {
-        return state.directivo
+        console.log(state.userToken)
       },
       setRoles: async(directivo, coordinador, rape, rd) => {
         if (rape == true) {
@@ -210,6 +217,7 @@ export default function App({ navigation }) {
                   <Drawer.Screen name="clients" options={{ title: "Gestión de clientes" }} component={Clientes} />
                   <Drawer.Screen name="personal" options={{ title: "Gestión de personal" }} component={Personal} />
                   <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsCoordinador} />
+                  <Drawer.Screen name="role" options={{ title: "Mis roles" }} component={Role} />
                 </Drawer.Navigator>
                 : state.rolSign == "DIRECTIVO" ?
                   <Drawer.Navigator initialRouteName='dashboard'>
@@ -219,11 +227,13 @@ export default function App({ navigation }) {
                     <Drawer.Navigator initialRouteName='dashboard'>
                       <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
                       <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsRD} />
+                      <Drawer.Screen name="role" options={{ title: "Mis roles" }} component={Role} />
                     </Drawer.Navigator>
                     : state.rolSign == "RAPE" ?
                       <Drawer.Navigator initialRouteName='dashboard'>
                         <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
                         <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsRape} />
+                        <Drawer.Screen name="role" options={{ title: "Mis roles" }} component={Role} />
                       </Drawer.Navigator>
                       : null
           }

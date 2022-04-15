@@ -13,6 +13,7 @@ import Loading from '../components/Loading';
 import * as yup from "yup";
 import { useFormik } from "formik";
 import { LogBox } from 'react-native';
+import BoxHeaderComponentInit from '../components/BoxHeaderComponentInit';
 export default function AltaDireccion() {
     const [showModal, setShowModal] = useState(false);
     const [showAlertDelete, setShowAlertDelete] = useState(false);
@@ -43,7 +44,7 @@ export default function AltaDireccion() {
             email: ""
         },
         validationSchema: yup.object().shape({
-            email: yup.string().required("Campo obligatorio"),
+            email: yup.string().email('Ingresa un correo válido').required("Campo obligatorio"),
             name: yup.string().required("Campo obligatorio"),
             surname: yup.string().required("Campo obligatorio"),
             secondSurname: yup.string().required("Campo obligatorio")
@@ -92,7 +93,7 @@ export default function AltaDireccion() {
                     setObject([])
                     setIsOpenAlertRegister(true)
                     getAll()
-                    formikRegister.resetForm
+                    formikRegister.resetForm();
                     setIsLoadingRegister(false)
                 })
         },
@@ -111,15 +112,15 @@ export default function AltaDireccion() {
             surname: yup.string().required("Campo obligatorio"),
             secondSurname: yup.string().required("Campo obligatorio")
         }),
-        onSubmit: async(values) => {
+        onSubmit: async (values) => {
             await getToken()
-            let dataPerson={
+            let dataPerson = {
                 ...objectModify,
-                person:{
+                person: {
                     ...objectModify.person,
                     name: values.name,
                     surname: values.surname,
-                    secondSurname:values.secondSurname
+                    secondSurname: values.secondSurname
                 }
             }
             setObjectModify(dataPerson)
@@ -130,11 +131,10 @@ export default function AltaDireccion() {
                     setErrorModify(false)
                     setShowModal(false)
 
-                    let data ={
+                    let data = {
                         ...dataPerson,
-                        password:values.password
+                        password: values.password
                     }
-                    console.log(data)
                     fetch(`http://${ipServer}/api/user/update`, {
                         method: 'PUT',
                         headers: {
@@ -143,6 +143,25 @@ export default function AltaDireccion() {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify(data),
+
+                    })
+                        .then((response) => response.json())
+                        .then(async (responseJson) => {
+                            setObjectModify([])
+                            setIsOpenAlertModify(true)
+                            getAll()
+                            setIsLoadingModify(false)
+                            formikModify.resetForm()
+                        })
+
+                    fetch(`http://${ipServer}/api/person/`, {
+                        method: 'PUT',
+                        headers: {
+                            Accept: 'application/json',
+                            "Authorization": `Bearer${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(dataPerson.person),
 
                     })
                         .then((response) => response.json())
@@ -231,11 +250,13 @@ export default function AltaDireccion() {
             .then(async (response) => await response.json(response))
             .then(async (responseJson) => {
                 let tempData = []
+                let cont=0;
                 for (let i = 0; i < responseJson.data.length; i++) {
                     for (let r = 0; r < responseJson.data[i].authorities.length; r++) {
                         if (responseJson.data[i].authorities[r].description === "Directivo") {
+                            cont++;
                             let newData = [
-                                responseJson.data[i].id, `${responseJson.data[i].person.name} ${responseJson.data[i].person.surname} ${responseJson.data[i].person.secondSurname}`, responseJson.data[i].person.email
+                                cont, `${responseJson.data[i].person.name} ${responseJson.data[i].person.surname} ${responseJson.data[i].person.secondSurname}`, responseJson.data[i].person.email
                                 , <ActionsButtons action={() => {
                                     setShowModal(true)
                                     setObjectModify(responseJson.data[i])
@@ -273,22 +294,22 @@ export default function AltaDireccion() {
             {isOpenAlertDelete ? <AlertComponent isOpen={setisOpenAlertDelete} status={"success"} title={"Directivo eliminado correctamente"} /> : null}
             {isOpenAlertRegister ? <AlertComponent isOpen={setIsOpenAlertRegister} status={"success"} title={"Directivo registrado correctamente"} /> : null}
             <ScrollView refreshControl={<RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />}
-            _contentContainerStyle={{
-                minW: "100%"
-            }}>
-                <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} isOpen={false} title={"Registrar directivo"} showIcon={true} Form={
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+            />}
+                _contentContainerStyle={{
+                    minW: "100%"
+                }}>
+                <BoxHeaderComponentInit fontColor={"#ffffff"} bgColor={"#049474"} isButton={true} isOpen={false} title={"Registrar directivo"} showIcon={true} Form={
                     <Center>
                         <Stack mt={3} space={4} w="100%">
                             <FormControl isRequired>
-                                <FormControl.Label>Nombre</FormControl.Label>
+                                <FormControl.Label>Nombre(s)</FormControl.Label>
                                 <Input
                                     onChangeText={formikRegister.handleChange('name')}
                                     onBlur={formikRegister.handleBlur('name')}
                                     value={formikRegister.values.name} type='text'
-                                    placeholder='Ejemplo: María' />
+                                    placeholder='Ejemplo: Emmanuel' />
                                 {formikRegister.errors.name ? (
                                     <Text color={"#FF0000"}>{formikRegister.errors.name}</Text>
                                 ) : null}
@@ -299,7 +320,7 @@ export default function AltaDireccion() {
                                     onChangeText={formikRegister.handleChange('surname')}
                                     onBlur={formikRegister.handleBlur('surname')}
                                     value={formikRegister.values.surname} type='text'
-                                    placeholder='Ejemplo: Valdez' />
+                                    placeholder='Ejemplo: Herrera' />
                                 {formikRegister.errors.surname ? (
                                     <Text color={"#FF0000"}>{formikRegister.errors.surname}</Text>
                                 ) : null}
@@ -310,18 +331,21 @@ export default function AltaDireccion() {
                                     onChangeText={formikRegister.handleChange('secondSurname')}
                                     onBlur={formikRegister.handleBlur('secondSurname')}
                                     value={formikRegister.values.secondSurname}
-                                    placeholder='Ejemplo: Díaz' />
+                                    placeholder='Ejemplo: Ibarra' />
                                 {formikRegister.errors.secondSurname ? (
                                     <Text color={"#FF0000"}>{formikRegister.errors.secondSurname}</Text>
                                 ) : null}
                             </FormControl>
                             <FormControl isRequired>
                                 <FormControl.Label>Correo electrónico</FormControl.Label>
-                                <Input type='email'
+                                <Input keyboardType='email-address' type='email'
                                     onChangeText={formikRegister.handleChange('email')}
                                     onBlur={formikRegister.handleBlur('email')}
                                     value={formikRegister.values.email}
                                     placeholder='Ejemplo: utez@utez.edu.mx' />
+                                <FormControl.HelperText>
+                                    La contraseña del usuario será la misma que su correo
+                                </FormControl.HelperText>
                                 {formikRegister.errors.email ? (
                                     <Text color={"#FF0000"}>{formikRegister.errors.email}</Text>
                                 ) : null}
@@ -336,7 +360,7 @@ export default function AltaDireccion() {
 
                 } />
                 {isOpenAlertModify ? <AlertComponent isOpen={setIsOpenAlertModify} status={"success"} title={"Directivo modificado correctamente"} /> : null}
-                <TableComponent isLoadingTable={isLoadingTable} setisLoadingTable={setisLoadingTable} isOpen={true} title={"Registrados"}
+                <TableComponent isLoadingTable={isLoadingTable} setisLoadingTable={setisLoadingTable} isOpen={true} title={"Directivos registrados"}
                     isSearch={true}
                     tableHead={['#', 'Nombre completo', 'Correo electrónico', 'Modificar', 'Eliminar']}
                     widthArr={[40, 180, 200, 120, 120]}
@@ -388,7 +412,7 @@ export default function AltaDireccion() {
                             value={formikModify.values.password}
                             type='password' placeholder='************' />
                         <FormControl.HelperText>
-                            La contraseña solo se cambiara si ingresa algún valor
+                            La contraseña solo se cambiará si ingresa algún valor
                         </FormControl.HelperText>
                     </FormControl>
 
@@ -398,13 +422,13 @@ export default function AltaDireccion() {
                             onChangeText={formikModify.handleChange('confirmPassword')}
                             onBlur={formikModify.handleBlur('confirmPassword')}
                             value={formikModify.values.confirmPassword}
-                            placeholder='************' type='password'/>
+                            placeholder='************' type='password' />
                     </FormControl>
                     {isLoadingModify ? <Loading /> : null}
                 </Modal.Body>
             } showModal={showModal} header={"Modificar directivo"} setShowModal={setShowModal} />
 
-            <AlertDialogComponent isOpen={showAlertDelete} setIsOpen={setShowAlertDelete} header={"Eliminar directivo"} body={"Se eliminará el directivo"} action={onDelete} />
+            <AlertDialogComponent isOpen={showAlertDelete} setIsOpen={setShowAlertDelete} header={"Eliminar directivo"} body={"¿Está seguro de realizar la acción solicitada?"} action={onDelete} />
 
         </View>
     )
