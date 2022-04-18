@@ -15,7 +15,7 @@ import ProgressBarComponent from '../../components/ProgressBarComponent';
 import * as yup from "yup";
 import { useFormik } from "formik";
 
-export default function ProjectsRape() {
+export default function ProjectsRape(props) {
   const [showModal, setShowModal] = useState(false);
   const [data, setData] = useState([])
   const [isLoadingTable, setisLoadingTable] = useState(true)
@@ -682,8 +682,9 @@ export default function ProjectsRape() {
                   setShowModal(true)
                 }} color={"black"} bgColor={"#ffc107"} />,
                 <ActionsButtons name={"file"} action={() => {
-                  setObjectModify(responseJson.data[i])
-                  setModalStart(true)
+                  props.navigation.navigate("reports",{
+                    id: responseJson.data[i].id
+                })
                 }} color={"white"} bgColor={"#28a745"} />
 
               ];

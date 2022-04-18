@@ -42,6 +42,7 @@ import ProjectsCoordinador from './src/screens/projects/ProjectsCoordinador';
 import ProjectsRD from './src/screens/projects/ProjectsRD';
 import ProjectsRape from './src/screens/projects/ProjectsRape';
 import Role from './src/screens/Role';
+import ViewReports from './src/screens/ViewReports';
 export default function App({ navigation }) {
 
   const [state, dispatch] = React.useReducer(
@@ -226,7 +227,7 @@ export default function App({ navigation }) {
 
   React.useEffect(() => {
   }, [])
-  LogBox.ignoreLogs(['Warning: ...']); //Hide warnings
+  LogBox.ignoreLogs(['NativeBase']); //Hide warnings
 
   return (
     <NativeBaseProvider>
@@ -268,6 +269,7 @@ export default function App({ navigation }) {
                 <Drawer.Screen name="personal" options={{ title: "Gestión de personal" }} component={Personal} />
                 <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsCoordinador} />
                 <Drawer.Screen name="role" options={{ title: "Mis roles" }} component={Role} />
+                <Drawer.Screen name="reports" options={{ title: "Ver reportes",drawerItemStyle:{display:'none'} }} component={ViewReports} />
               </Drawer.Navigator>
               : state.rolSign == "DIRECTIVO" ?
                 <Drawer.Navigator initialRouteName='dashboard'>
@@ -277,12 +279,14 @@ export default function App({ navigation }) {
                   <Drawer.Navigator initialRouteName='dashboard'>
                     <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
                     <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsRD} />
+                    <Drawer.Screen name="reports" options={{ title: "Ver reportes",drawerItemStyle:{display:'none'} }} component={ViewReports} />
                     <Drawer.Screen name="role" options={{ title: "Mis roles" }} component={Role} />
                   </Drawer.Navigator>
                   : state.rolSign == "RAPE" ?
                     <Drawer.Navigator initialRouteName='dashboard'>
                       <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
                       <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsRape} />
+                      <Drawer.Screen name="reports" options={{ title: "Ver reportes",drawerItemStyle:{display:'none'} }} component={ViewReports} />
                       <Drawer.Screen name="role" options={{ title: "Mis roles" }} component={Role} />
                     </Drawer.Navigator>
                     : null

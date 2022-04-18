@@ -19,7 +19,7 @@ import BoxHeaderComponentInit from '../../components/BoxHeaderComponentInit';
 import TableUniqueComponent from '../../components/TableUniqueComponent';
 import ProgressBarComponent from '../../components/ProgressBarComponent';
 
-export default function ProjectsCoordinador() {
+export default function ProjectsCoordinador(props) {
     const [showModal, setShowModal] = useState(false);
     const [showAlertDelete, setShowAlertDelete] = useState(false);
     const [isOpenAlertDelete, setisOpenAlertDelete] = useState(false)
@@ -940,8 +940,9 @@ export default function ProjectsCoordinador() {
                                 formikModify.handleChange
                             }} name={"edit"} color={"black"} bgColor={"#ffc107"} />,
                             <ActionsButtons name={"file"} action={() => {
-                                setObjectModify(responseJson.data[i])
-                                setModalStart(true)
+                                props.navigation.navigate("reports",{
+                                    id: responseJson.data[i].id
+                                })
                             }} color={"white"} bgColor={"#28a745"} />
 
                         ];
@@ -1514,7 +1515,7 @@ export default function ProjectsCoordinador() {
                 </Modal.Body>
             } showModal={showModalModifyProspecto} header={"Modificar proyecto prospecto"} setShowModal={setShowModalModifyProspecto} />
 
-            <ModalComponent formik={formikIniciarProspecto} content={
+<ModalComponent formik={formikIniciarProspecto} content={
                 <Modal.Body>
                     <Center>
                         <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Datos del proyecto"} showIcon={true} Form={

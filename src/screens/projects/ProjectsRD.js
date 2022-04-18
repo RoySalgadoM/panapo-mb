@@ -13,7 +13,7 @@ import OvalosTextComponent from '../../components/OvalosTextComponent';
 import TableUniqueComponent from '../../components/TableUniqueComponent';
 import ProgressBarComponent from '../../components/ProgressBarComponent';
 
-export default function ProjectsRD() {
+export default function ProjectsRD(props) {
   const [showModal, setShowModal] = useState(false);
   const [data, setData] = useState([])
   const [isLoadingTable, setisLoadingTable] = useState(true)
@@ -34,8 +34,6 @@ export default function ProjectsRD() {
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     getAll()
-    getAllProyectos()
-    getAllProspecto()
     getAllPersonal()
     getAllRAPE()
     getAllRD()
@@ -274,30 +272,6 @@ export default function ProjectsRD() {
     setIsLoadingTableUnique(false)
   }
 
-  const getAllProyectos = async () => {
-    await getToken()
-    fetch(`http://${ipServer}/api/project/`, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        "Authorization": `Bearer${token}`,
-        'Content-Type': 'application/json',
-      },
-    })
-      .then((response) => response.json())
-      .then(async (responseJson) => {
-        let proyects = []
-        for (let i = 0; i < responseJson.data.length; i++) {
-          if (responseJson.data[i].statusProject.id == 4 || responseJson.data[i].statusProject.id == 5) {
-            let proyectTemp = [
-              <Select.Item label={`${responseJson.data[i].name}`} value={`${responseJson.data[i].id}`} />
-            ]
-            proyects.push(proyectTemp)
-          }
-        }
-        setDataProjects(proyects)
-      })
-  }
 
   const setValuesTeam = async () => {
     setAddProgrammers([])
@@ -385,7 +359,7 @@ export default function ProjectsRD() {
         let username = ""
         try {
           username = await AsyncStorage.getItem('username');
-          setRole(rol)
+         
         } catch (e) {
           console.log(e)
           // error reading value
@@ -425,8 +399,9 @@ export default function ProjectsRD() {
                   setShowModalInfo(true)
                 }} color={"white"} bgColor={"#0b5ed7"} />,
                 <ActionsButtons name={"file"} action={() => {
-                  setObjectModify(responseJson.data[i])
-                  setModalStart(true)
+                  props.navigation.navigate("reports",{
+                    id: responseJson.data[i].id
+                })
                 }} color={"white"} bgColor={"#28a745"} />
 
               ];
@@ -449,7 +424,6 @@ export default function ProjectsRD() {
 
   useEffect(() => {
     getAll()
-    getAllProyectos()
     getAllPersonal()
     getAllRAPE()
     getAllRD()
