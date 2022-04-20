@@ -43,6 +43,8 @@ import ProjectsRD from './src/screens/projects/ProjectsRD';
 import ProjectsRape from './src/screens/projects/ProjectsRape';
 import Role from './src/screens/Role';
 import ViewReports from './src/screens/ViewReports';
+import Roles from './src/screens/Roles';
+import Users from './src/screens/Users';
 export default function App({ navigation }) {
 
   const [state, dispatch] = React.useReducer(
@@ -263,31 +265,33 @@ export default function App({ navigation }) {
 
             state.rolSign == "COORDINADOR" ?
               <Drawer.Navigator initialRouteName='dashboard'>
-                <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
+                <Drawer.Screen name="dashboard" options={{ title: "Panel de proyectos" }} component={Dashboard} />
+                <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsCoordinador} />
+                <Drawer.Screen name="personal" options={{ title: "Gestión de personal" }} component={Personal} />
+                <Drawer.Screen name="users" options={{ title: "Gestión de usuarios"}} component={Users} />
                 <Drawer.Screen name="direction" options={{ title: "Gestión de usuarios de alta dirección" }} component={AltaDireccion} />
                 <Drawer.Screen name="clients" options={{ title: "Gestión de clientes" }} component={Clientes} />
-                <Drawer.Screen name="personal" options={{ title: "Gestión de personal" }} component={Personal} />
-                <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsCoordinador} />
-                <Drawer.Screen name="role" options={{ title: "Mis roles" }} component={Role} />
+                <Drawer.Screen name="roles" options={{ title: "Gestión de roles"}} component={Roles} />
+                <Drawer.Screen name="role" options={{ title: "Configuración", headerRight: () => (<Button bg={"#042b61"} onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Role} />
                 <Drawer.Screen name="reports" options={{ title: "Ver reportes",drawerItemStyle:{display:'none'} }} component={ViewReports} />
               </Drawer.Navigator>
               : state.rolSign == "DIRECTIVO" ?
                 <Drawer.Navigator initialRouteName='dashboard'>
-                  <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
+                  <Drawer.Screen name="dashboard" options={{ title: "Panel de proyectos"}} component={Dashboard} />
                 </Drawer.Navigator>
                 : state.rolSign == "RD" ?
                   <Drawer.Navigator initialRouteName='dashboard'>
-                    <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
-                    <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsRD} />
+                    <Drawer.Screen name="dashboard" options={{ title: "Panel de proyectos", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
+                    <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos RD" }} component={ProjectsRD} />
                     <Drawer.Screen name="reports" options={{ title: "Ver reportes",drawerItemStyle:{display:'none'} }} component={ViewReports} />
-                    <Drawer.Screen name="role" options={{ title: "Mis roles" }} component={Role} />
+                    <Drawer.Screen name="role" options={{ title: "Configuración", headerRight: () => (<Button bg={"#042b61"} onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Role} />
                   </Drawer.Navigator>
                   : state.rolSign == "RAPE" ?
                     <Drawer.Navigator initialRouteName='dashboard'>
-                      <Drawer.Screen name="dashboard" options={{ title: "Dashboard", headerRight: () => (<Button onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Dashboard} />
-                      <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos" }} component={ProjectsRape} />
+                      <Drawer.Screen name="dashboard" options={{ title: "Panel de proyectos"}} component={Dashboard} />
+                      <Drawer.Screen name="projects" options={{ title: "Gestión de proyectos RAPE" }} component={ProjectsRape} />
                       <Drawer.Screen name="reports" options={{ title: "Ver reportes",drawerItemStyle:{display:'none'} }} component={ViewReports} />
-                      <Drawer.Screen name="role" options={{ title: "Mis roles" }} component={Role} />
+                      <Drawer.Screen name="role" options={{ title: "Configuración", headerRight: () => (<Button bg={"#042b61"} onPress={() => authContext.signOut()} mr={2}>Cerrar sesión</Button>) }} component={Role} />
                     </Drawer.Navigator>
                     : null
           }

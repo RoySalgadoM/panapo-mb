@@ -1,19 +1,22 @@
 import React,{useState,useEffect} from 'react';
-import { VStack, Box, Divider, Center, Button, ScrollView, View } from 'native-base';
+import { VStack, Box, Text, Center, Button, ScrollView, View } from 'native-base';
 import { Icon } from 'react-native-elements';
 import { AuthContext } from '../config/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import AlertComponent from '../components/AlertComponent';
 export default function Role(props) {
     const {setRoleActive } = React.useContext(AuthContext);
     const [role, setRole] = useState("")
+    const [username, setUsername] = useState("")
     let rol="";
     let rd="";
     let rape=""
     let coordinador=""
+    let user = "";
     const [rdGet, setRdGet] = useState("")
     const [rapeGet, setRapeGet] = useState("")
     const [coordinadorGet, setCoordinadorGet] = useState("")
+    const { signOut } = React.useContext(AuthContext);
 
     const getRole=async()=>{
         try {
@@ -21,7 +24,9 @@ export default function Role(props) {
             rd = await AsyncStorage.getItem('RD');
             rape = await AsyncStorage.getItem('RAPE');
             coordinador = await AsyncStorage.getItem('COORDINADOR');
+            user = await AsyncStorage.getItem('username');
             setRole(rol)
+            setUsername(user)
             setRdGet(rd)
             setCoordinadorGet(coordinador)
             setRapeGet(rape)
@@ -40,6 +45,7 @@ export default function Role(props) {
                 <ScrollView m={"4"}   _contentContainerStyle={{
                     minW: "100%"
                 }}>
+                    <Text>Usuario: {username}</Text>
                     {role!="COORDINADOR" && coordinadorGet === "true" ? <Center bg={"#049474"}>
                         <Box px="4" borderBottomColor={"#fff"} pt="4" _text={
                             {
@@ -103,8 +109,7 @@ export default function Role(props) {
                             </Button>
                         </Box>
 
-                    </Center>:null}
-                    
+                    </Center>:<AlertComponent isOpen={true} status={"error"} title={"No tienes otros roles"} /> }
                 </ScrollView>
             </View>
     )

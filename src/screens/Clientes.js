@@ -185,10 +185,12 @@ export default function Clientes() {
         })
             .then(async (response) => await response.json(response))
             .then(async (responseJson) => {
+                let cont = 0;
                 let tempData = []
                 for (let i = 0; i < responseJson.data.length; i++) {
+                    cont++;
                     let newData = [
-                        responseJson.data[i].id, `${responseJson.data[i].name} ${responseJson.data[i].surname} ${responseJson.data[i].secondSurname}`, responseJson.data[i].company, responseJson.data[i].typeClient.description
+                        cont, `${responseJson.data[i].name} ${responseJson.data[i].surname} ${responseJson.data[i].secondSurname}`, responseJson.data[i].company, responseJson.data[i].typeClient.description
                         , <ActionsButtons name={"info"} action={() => {
                             setShowModalInfo(true)
                             setObjectModify(responseJson.data[i])

@@ -83,8 +83,6 @@ export default function ProjectsRape(props) {
     validationSchema: yup.object().shape({
       phasePlanned: yup.string().required("Campo obligatorio"),
       phaseReal: yup.string().required("Campo obligatorio"),
-      stagePlanned: yup.string().required("Campo obligatorio"),
-      stageReal: yup.string().required("Campo obligatorio"),
       percentage: yup.string().required("Campo obligatorio"),
       cost: yup.string().required("Campo obligatorio"),
       daysDeviation: yup.string().required("Campo obligatorio")
@@ -170,7 +168,7 @@ export default function ProjectsRape(props) {
         .then(async (responseJson) => {
           console.log(responseJson)
           formikInsert.values.report = responseJson.data.id;
-  
+
           formikInsert.handleSubmit()
         })
     },
@@ -185,14 +183,6 @@ export default function ProjectsRape(props) {
       cierre: "",
       report: ""
     },
-    validationSchema: yup.object().shape({
-      inicio: yup.string().required("Campo obligatorio"),
-      requerimientos: yup.string().required("Campo obligatorio"),
-      analisis: yup.string().required("Campo obligatorio"),
-      integracion: yup.string().required("Campo obligatorio"),
-      construccion: yup.string().required("Campo obligatorio"),
-      cierre: yup.string().required("Campo obligatorio")
-    }),
     onSubmit: async (values) => {
       await getToken()
       let data = {
@@ -581,38 +571,6 @@ export default function ProjectsRape(props) {
     setIsLoadingTableUnique(false)
 
   }
-  const addProg = async () => {
-    await getToken()
-    if (addProgrammers.length < objectModify.numberBeca) {
-      setIsLoadingTableUnique(true)
-      fetch(`http://${ipServer}/api/person/${proggrammer}`, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          "Authorization": `Bearer${token}`,
-          'Content-Type': 'application/json',
-        }
-
-      })
-        .then((response) => response.json())
-        .then(async (responseJson) => {
-          let final = []
-          final = addProgrammers;
-          let dataAsign = [`${responseJson.data.name} ${responseJson.data.surname} ${responseJson.data.secondSurname}`, responseJson.data.email, responseJson.data.profession.description, <ActionsButtons name={"trash"} action={() => {
-            deletePrograProspecto(`${responseJson.data.email}`)
-          }} color={"white"} bgColor={"#dc3545"} />]
-          await final.push(dataAsign)
-          await setAddProgrammers(final)
-          getAllPersonal()
-          getAllRAPE()
-          getAllRD()
-          setIsLoadingTableUnique(false)
-        })
-    } else {
-      setErrorToMuch(true)
-    }
-
-  }
   const getToken = async () => {
     try {
       token = await AsyncStorage.getItem('token')
@@ -645,6 +603,25 @@ export default function ProjectsRape(props) {
         }
         let tempData = []
         let cont = 0;
+        let arrTemp = responseJson.data
+        responseJson.data = []
+        for (let m = 0; m < arrTemp.length; m++) {
+          if (arrTemp[m].priority === "Alta") {
+            responseJson.data.push(arrTemp[m])
+          }
+
+        }
+        for (let m = 0; m < arrTemp.length; m++) {
+          if (arrTemp[m].priority === "Media") {
+            responseJson.data.push(arrTemp[m])
+
+          }
+        }
+        for (let m = 0; m < arrTemp.length; m++) {
+          if (arrTemp[m].priority === "Baja") {
+            responseJson.data.push(arrTemp[m])
+          }
+        }
         for (let i = 0; i < responseJson.data.length; i++) {
           if (responseJson.data[i].statusProject.description != "Prospecto") {
             let exist = false;
@@ -682,9 +659,9 @@ export default function ProjectsRape(props) {
                   setShowModal(true)
                 }} color={"black"} bgColor={"#ffc107"} />,
                 <ActionsButtons name={"file"} action={() => {
-                  props.navigation.navigate("reports",{
+                  props.navigation.navigate("reports", {
                     id: responseJson.data[i].id
-                })
+                  })
                 }} color={"white"} bgColor={"#28a745"} />
 
               ];
@@ -781,9 +758,6 @@ export default function ProjectsRape(props) {
               <Select.Item label="Integración y pruebas" value="5" />
               <Select.Item label="Cierre" value="6" />
             </Select>
-            {formikRegister.errors.phasePlanned ? (
-              <Text color={"#FF0000"}>{formikRegister.errors.phasePlanned}</Text>
-            ) : null}
           </FormControl>
           <FormControl isRequired>
             <FormControl.Label>Fase real</FormControl.Label>
@@ -800,9 +774,6 @@ export default function ProjectsRape(props) {
               <Select.Item label="Integración y pruebas" value="5" />
               <Select.Item label="Cierre" value="6" />
             </Select>
-            {formikRegister.errors.phaseReal ? (
-              <Text color={"#FF0000"}>{formikRegister.errors.phaseReal}</Text>
-            ) : null}
           </FormControl>
           <FormControl isRequired>
             <FormControl.Label>Porcentaje de avance total (%)</FormControl.Label>
@@ -845,9 +816,6 @@ export default function ProjectsRape(props) {
               onBlur={formikInsert.handleBlur('inicio')}
               value={formikInsert.values.inicio}
               placeholder='Ejemplo: 20' />
-            {formikInsert.errors.inicio ? (
-              <Text color={"#FF0000"}>{formikInsert.errors.inicio}</Text>
-            ) : null}
           </FormControl>
           <FormControl isRequired>
             <FormControl.Label>Requerimientos</FormControl.Label>
@@ -856,9 +824,6 @@ export default function ProjectsRape(props) {
               onBlur={formikInsert.handleBlur('requerimientos')}
               value={formikInsert.values.requerimientos}
               placeholder='Ejemplo: 20' />
-            {formikInsert.errors.requerimientos ? (
-              <Text color={"#FF0000"}>{formikInsert.errors.requerimientos}</Text>
-            ) : null}
           </FormControl>
           <FormControl isRequired>
             <FormControl.Label>Análisis y diseño</FormControl.Label>
@@ -867,9 +832,6 @@ export default function ProjectsRape(props) {
               onBlur={formikInsert.handleBlur('analisis')}
               value={formikInsert.values.analisis}
               placeholder='Ejemplo: 20' />
-            {formikInsert.errors.analisis ? (
-              <Text color={"#FF0000"}>{formikInsert.errors.analisis}</Text>
-            ) : null}
           </FormControl>
           <FormControl isRequired>
             <FormControl.Label>Construcción</FormControl.Label>
@@ -878,9 +840,6 @@ export default function ProjectsRape(props) {
               onBlur={formikInsert.handleBlur('construccion')}
               value={formikInsert.values.construccion}
               placeholder='Ejemplo: 20' />
-            {formikInsert.errors.construccion ? (
-              <Text color={"#FF0000"}>{formikInsert.errors.construccion}</Text>
-            ) : null}
           </FormControl>
           <FormControl isRequired>
             <FormControl.Label>Integración y pruebas</FormControl.Label>
@@ -889,9 +848,6 @@ export default function ProjectsRape(props) {
               onBlur={formikInsert.handleBlur('integracion')}
               value={formikInsert.values.integracion}
               placeholder='Ejemplo: 20' />
-            {formikInsert.errors.integracion ? (
-              <Text color={"#FF0000"}>{formikInsert.errors.integracion}</Text>
-            ) : null}
           </FormControl>
           <FormControl isRequired>
             <FormControl.Label>Integración y pruebas</FormControl.Label>
@@ -900,9 +856,6 @@ export default function ProjectsRape(props) {
               onBlur={formikInsert.handleBlur('cierre')}
               value={formikInsert.values.cierre}
               placeholder='Ejemplo: 20' />
-            {formikInsert.errors.cierre ? (
-              <Text color={"#FF0000"}>{formikInsert.errors.cierre}</Text>
-            ) : null}
           </FormControl>
 
           {isLoadingRegister ? <Loading /> : null}
@@ -1000,18 +953,6 @@ export default function ProjectsRape(props) {
                 </FormControl>}
                 <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Analistas programadores"} showIcon={true} Form={
                   <Stack mt={3} space={4} w="100%">
-                    {errorToMuch ? <AlertComponent isOpen={setErrorToMuch} status={"error"} title={"Ya se han agregado todos los programadores"} /> : null}
-
-                    {isLoadingTableUnique ? <Loading /> : <FormControl isRequired>
-                      <Select isDisabled onValueChange={setProggrammer} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
-                        bg: "teal.600",
-                        endIcon: <CheckIcon size="5" />
-                      }} mt={1}>
-                        {personal}
-                      </Select>
-                    </FormControl>}
-
-                    <Button disabled startIcon={<AddIcon on size="4" mt="0.5" color={"#fff"} />} bg={"#042B61"} onPress={addProg}>Agregar</Button>
                     <TableUniqueComponent isLoadingTable={isLoadingTableUnique} setisLoadingTable={setIsLoadingTableUnique} isOpen={true} title={""}
                       isSearch={false}
                       tableHead={['Nombre', 'Correo', 'Rol', 'Eliminar']}

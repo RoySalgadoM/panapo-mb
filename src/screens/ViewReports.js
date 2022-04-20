@@ -1,6 +1,6 @@
 import { View, RefreshControl } from 'react-native'
 import React, { useState, useEffect } from 'react'
-import { Input, ScrollView, Modal, FormControl } from "native-base";
+import { Text, ScrollView, Modal, FormControl, Progress } from "native-base";
 import TableComponent from '../components/TableComponent';
 import ProgressBarComponent from '../components/ProgressBarComponent';
 import OvalosTextComponent from '../components/OvalosTextComponent';
@@ -76,47 +76,47 @@ export default function ViewReports(props) {
                             .then(async (response2) => {
                                 for (let m = 0; m < response2.data.length; m++) {
                                     if (response2.data[m].report.project.id == props.route.params?.id) {
-                                
+
                                         if (response2.data[m].phases.id == 1) {
-                                            temp={
+                                            temp = {
                                                 ...temp,
-                                                inicio : response2.data[m].porcentaje
+                                                inicio: response2.data[m].porcentaje
                                             }
                                         }
                                         if (response2.data[m].phases.id == 2) {
-                                            temp={
+                                            temp = {
                                                 ...temp,
-                                                requerimientos : response2.data[m].porcentaje
+                                                requerimientos: response2.data[m].porcentaje
                                             }
-                                            
+
                                         }
                                         if (response2.data[m].phases.id == 3) {
-                                            temp={
+                                            temp = {
                                                 ...temp,
-                                                analisis : response2.data[m].porcentaje
+                                                analisis: response2.data[m].porcentaje
                                             }
-                                            
+
                                         }
                                         if (response2.data[m].phases.id == 4) {
-                                            temp={
+                                            temp = {
                                                 ...temp,
-                                                construccion : response2.data[m].porcentaje
+                                                construccion: response2.data[m].porcentaje
                                             }
-                                            
+
                                         }
                                         if (response2.data[m].phases.id == 5) {
-                                            temp={
+                                            temp = {
                                                 ...temp,
-                                                integracion : response2.data[m].porcentaje
+                                                integracion: response2.data[m].porcentaje
                                             }
-                                            
+
                                         }
                                         if (response2.data[m].phases.id == 6) {
-                                            temp={
+                                            temp = {
                                                 ...temp,
-                                                cierre : response2.data[m].porcentaje
+                                                cierre: response2.data[m].porcentaje
                                             }
-                                            
+
                                         }
 
                                     }
@@ -134,23 +134,33 @@ export default function ViewReports(props) {
                         console.log(porcentaje)
                         let newData = [
                             cont, responseJson.data[i].date, responseJson.data[i].stagePlanned, responseJson.data[i].stageReal,
-                            responseJson.data[i].phasePlanned, responseJson.data[i].phaseReal, 
+                            responseJson.data[i].phasePlanned, responseJson.data[i].phaseReal,
                             <ProgressBarComponent progress={responseJson.data[i].percentage} text={`${responseJson.data[i].percentage}% Completado`} />,
-                            
+
                             <ActionsButtons name={"bars"} action={() => {
-                                
+
                                 setObject(temp)
                                 setShowModalInfo(true)
                                 console.log(temp)
                             }} color={"white"} bgColor={"#0b5ed7"} />,
                             responseJson.data[i].cost,
-                            
-                            porcentaje >= 0 && porcentaje <= 10 ?
-                                <OvalosTextComponent text={responseJson.data[i].daysDeviation} colorB={"rgb(40, 167, 69)"} />
-                                : porcentaje >= 10 && porcentaje <= 15 ?
-                                    <OvalosTextComponent text={responseJson.data[i].daysDeviation} colorB={"rgb(255, 193, 7)"} />
-                                    :
-                                    <OvalosTextComponent text={responseJson.data[i].daysDeviation} colorB={"rgb(220, 53, 69)"} />
+
+                            responseJson.data[i].daysDeviation == undefined ?
+                                <OvalosTextComponent text={"No hay reportes"} colorB={"grey"} /> :
+                                porcentaje >= 0 && porcentaje <= 10 ?
+                                    <OvalosTextComponent text={responseJson.data[i].daysDeviation} colorB={"rgb(40, 167, 69)"} />
+                                    : porcentaje >= 10 && porcentaje <= 15 ?
+                                        <OvalosTextComponent text={responseJson.data[i].daysDeviation} colorB={"rgb(255, 193, 7)"} />
+                                        :
+                                        <OvalosTextComponent text={responseJson.data[i].daysDeviation} colorB={"rgb(220, 53, 69)"} />,
+
+                            responseJson.data[i].priority === "Alta"
+                                ? <OvalosTextComponent text={responseJson.data[i].priority} colorB={"#dc3545"} />
+                                : responseJson.data[i].priority === "Media" ?
+                                    <OvalosTextComponent text={responseJson.data[i].priority} colorB={"#ffc107"} />
+                                    : responseJson.data[i].priority === "Baja" ?
+                                        <OvalosTextComponent text={responseJson.data[i].priority} colorB={"#28a745"} />
+                                        : ""
 
                         ]
                         await tempData.push(newData)
@@ -180,29 +190,47 @@ export default function ViewReports(props) {
 
             <ModalComponent showButtonConfirm={true} content={
                 <Modal.Body>
-                    <FormControl isDisabled isRequired>
+                    <FormControl isDisabled>
                         <FormControl.Label>Inicio</FormControl.Label>
-                        <Input type='number' value={`${object.inicio}`} isDisabled placeholder='Ejemplo: SIGEH' />
+                        <Progress colorScheme="emerald" value={object.inicio} mx="4" />
+                        <Text style={{ textAlign: "center" }}>
+                            {object.inicio}% Completado
+                        </Text>
                     </FormControl>
-                    <FormControl isDisabled isRequired>
+                    <FormControl isDisabled>
                         <FormControl.Label>Requerimientos</FormControl.Label>
-                        <Input type='number' value={`${object.requerimientos}`} isDisabled placeholder='Ejemplo: SIGEH' />
+                        <Progress colorScheme="emerald" value={object.requerimientos} mx="4" />
+                        <Text style={{ textAlign: "center" }}>
+                            {object.requerimientos}% Completado
+                        </Text>
                     </FormControl>
-                    <FormControl isDisabled isRequired>
+                    <FormControl isDisabled>
                         <FormControl.Label>Análisis y diseño</FormControl.Label>
-                        <Input type='number' value={`${object.analisis}`} isDisabled placeholder='Ejemplo: SIGEH' />
+                        <Progress colorScheme="emerald" value={object.analisis} mx="4" />
+                        <Text style={{ textAlign: "center" }}>
+                            {object.analisis}% Completado
+                        </Text>
                     </FormControl>
-                    <FormControl isDisabled isRequired>
+                    <FormControl isDisabled>
                         <FormControl.Label>Construcción</FormControl.Label>
-                        <Input type='number' value={`${object.construccion}`} isDisabled placeholder='Ejemplo: SIGEH' />
+                        <Progress colorScheme="emerald" value={object.construccion} mx="4" />
+                        <Text style={{ textAlign: "center" }}>
+                            {object.construccion}% Completado
+                        </Text>
                     </FormControl>
-                    <FormControl isDisabled isRequired>
+                    <FormControl isDisabled>
                         <FormControl.Label>Integración y pruebas</FormControl.Label>
-                        <Input type='number' value={`${object.integracion}`} isDisabled placeholder='Ejemplo: SIGEH' />
+                        <Progress colorScheme="emerald" value={object.integracion} mx="4" />
+                        <Text style={{ textAlign: "center" }}>
+                            {object.integracion}% Completado
+                        </Text>
                     </FormControl>
-                    <FormControl isDisabled isRequired>
+                    <FormControl isDisabled>
                         <FormControl.Label>Cierre</FormControl.Label>
-                        <Input type='number' value={`${object.cierre}`} isDisabled placeholder='Ejemplo: SIGEH' />
+                        <Progress colorScheme="emerald" value={object.cierre} mx="4" />
+                        <Text style={{ textAlign: "center" }}>
+                            {object.cierre}% Completado
+                        </Text>
                     </FormControl>
                 </Modal.Body>
             } showModal={showModalInfo} header={"Porcentaje de avances por fases"} setShowModal={setShowModalInfo} />

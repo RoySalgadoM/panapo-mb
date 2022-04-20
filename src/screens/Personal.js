@@ -194,7 +194,9 @@ export default function Personal() {
     });
 
     let token = ""
-    const onDelete = () => {
+    const onDelete = async() => {
+
+        await getToken()
         let data = {
             ...objectModify,
             status: {
@@ -219,7 +221,8 @@ export default function Personal() {
                 setObjectModify([])
             })
     }
-    const onEnable = () => {
+    const onEnable = async() => {
+        await getToken()
         setisOpenAlertDelete(true)
         let data = {
             ...objectModify,
@@ -285,7 +288,6 @@ export default function Personal() {
                                 setObjectModify(responseJson.data[i])
                             }} color={"white"} bgColor={"#0b5ed7"} />,
                             <ActionsButtons action={() => {
-
                                 setObjectModify(responseJson.data[i])
                                 formikModify.values.profession = responseJson.data[i].profession.id
                                 formikModify.resetForm

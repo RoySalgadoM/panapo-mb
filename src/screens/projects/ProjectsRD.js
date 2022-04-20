@@ -359,18 +359,37 @@ export default function ProjectsRD(props) {
         let username = ""
         try {
           username = await AsyncStorage.getItem('username');
-         
+
         } catch (e) {
           console.log(e)
           // error reading value
         }
         let tempData = []
         let cont = 0;
+        let arrTemp = responseJson.data
+        responseJson.data = []
+        for (let m = 0; m < arrTemp.length; m++) {
+          if (arrTemp[m].priority === "Alta") {
+            responseJson.data.push(arrTemp[m])
+          }
+
+        }
+        for (let m = 0; m < arrTemp.length; m++) {
+          if (arrTemp[m].priority === "Media") {
+            responseJson.data.push(arrTemp[m])
+
+          }
+        }
+        for (let m = 0; m < arrTemp.length; m++) {
+          if (arrTemp[m].priority === "Baja") {
+            responseJson.data.push(arrTemp[m])
+          }
+        }
         for (let i = 0; i < responseJson.data.length; i++) {
           if (responseJson.data[i].statusProject.description != "Prospecto") {
             let exist = false;
             for (let m = 0; m < responseJson.data[i].team.length; m++) {
-              if (responseJson.data[i].team[m].person.email === username && responseJson.data[i].team[m].rolProject.id==1) {
+              if (responseJson.data[i].team[m].person.email === username && responseJson.data[i].team[m].rolProject.id == 1) {
                 exist = true
               }
             }
@@ -399,9 +418,9 @@ export default function ProjectsRD(props) {
                   setShowModalInfo(true)
                 }} color={"white"} bgColor={"#0b5ed7"} />,
                 <ActionsButtons name={"file"} action={() => {
-                  props.navigation.navigate("reports",{
+                  props.navigation.navigate("reports", {
                     id: responseJson.data[i].id
-                })
+                  })
                 }} color={"white"} bgColor={"#28a745"} />
 
               ];
@@ -535,18 +554,6 @@ export default function ProjectsRD(props) {
                 </FormControl>}
                 <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Analistas programadores"} showIcon={true} Form={
                   <Stack mt={3} space={4} w="100%">
-                    {errorToMuch ? <AlertComponent isOpen={setErrorToMuch} status={"error"} title={"Ya se han agregado todos los programadores"} /> : null}
-
-                    {isLoadingTableUnique ? <Loading /> : <FormControl isRequired>
-                      <Select isDisabled onValueChange={setProggrammer} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
-                        bg: "teal.600",
-                        endIcon: <CheckIcon size="5" />
-                      }} mt={1}>
-                        {personal}
-                      </Select>
-                    </FormControl>}
-
-                    <Button startIcon={<AddIcon on size="4" mt="0.5" color={"#fff"} />} bg={"#042B61"} onPress={addProg}>Agregar</Button>
                     <TableUniqueComponent isLoadingTable={isLoadingTableUnique} setisLoadingTable={setIsLoadingTableUnique} isOpen={true} title={""}
                       isSearch={false}
                       tableHead={['Nombre', 'Correo', 'Rol', 'Eliminar']}

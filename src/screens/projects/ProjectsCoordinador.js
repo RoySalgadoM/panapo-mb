@@ -309,18 +309,18 @@ export default function ProjectsCoordinador(props) {
         },
         onSubmit: async (values) => {
             setIsLoadingModify(true)
-            let priority=""
-            if(values.priority==1){
+            let priority = ""
+            if (values.priority == 1) {
                 priority = "Alta"
-            }else if(values.priority==2){
+            } else if (values.priority == 2) {
                 priority = "Media"
-            }else if(values.priority==3){
+            } else if (values.priority == 3) {
                 priority = "Baja"
             }
-            let registerData={
+            let registerData = {
                 ...objectModify,
-                statusProject:{
-                    id:values.statusProject
+                statusProject: {
+                    id: values.statusProject
                 },
                 priority: priority
             }
@@ -904,19 +904,38 @@ export default function ProjectsCoordinador(props) {
             .then(async (responseJson) => {
                 let tempData = []
                 let cont = 0;
+                let arrTemp = responseJson.data
+                responseJson.data = []
+                for (let m = 0; m < arrTemp.length; m++) {
+                    if (arrTemp[m].priority === "Alta") {
+                        responseJson.data.push(arrTemp[m])
+                    } 
+                    
+                }
+                for (let m = 0; m < arrTemp.length; m++) {
+                    if (arrTemp[m].priority === "Media") {
+                        responseJson.data.push(arrTemp[m])
+                        
+                    } 
+                }
+                for (let m = 0; m < arrTemp.length; m++) {
+                    if (arrTemp[m].priority === "Baja") {
+                        responseJson.data.push(arrTemp[m])
+                    } 
+                }
                 for (let i = 0; i < responseJson.data.length; i++) {
-                    if (responseJson.data[i].statusProject.description != "Prospecto") {
+                    if (responseJson.data[i]?.statusProject?.description != "Prospecto") {
                         cont++;
                         let newData = [
-                            cont, responseJson.data[i].acronym, <ProgressBarComponent progress={responseJson.data[i].percentage} text={`${responseJson.data[i].percentage}% Completado`} />,
-                            responseJson.data[i].statusProject.description === "Pausado"
-                                ? <OvalosTextComponent text={responseJson.data[i].statusProject.description} colorB={"#ffc107"} />
-                                : responseJson.data[i].statusProject.description === "Cancelado" ?
-                                    <OvalosTextComponent text={responseJson.data[i].statusProject.description} colorB={"#dc3545"} />
-                                    : responseJson.data[i].statusProject.description === "Activo" ?
-                                        <OvalosTextComponent text={responseJson.data[i].statusProject.description} colorB={"#28a745"} />
-                                        : responseJson.data[i].statusProject.description === "Cerrado" ?
-                                            <OvalosTextComponent text={responseJson.data[i].statusProject.description} colorB={"#007bff"} />
+                            cont, responseJson.data[i]?.acronym, <ProgressBarComponent progress={responseJson.data[i].percentage} text={`${responseJson.data[i].percentage}% Completado`} />,
+                            responseJson.data[i].statusProject?.description === "Pausado"
+                                ? <OvalosTextComponent text={responseJson.data[i].statusProject?.description} colorB={"#ffc107"} />
+                                : responseJson.data[i].statusProject?.description === "Cancelado" ?
+                                    <OvalosTextComponent text={responseJson.data[i].statusProject?.description} colorB={"#dc3545"} />
+                                    : responseJson.data[i].statusProject?.description === "Activo" ?
+                                        <OvalosTextComponent text={responseJson.data[i].statusProject?.description} colorB={"#28a745"} />
+                                        : responseJson.data[i].statusProject?.description === "Cerrado" ?
+                                            <OvalosTextComponent text={responseJson.data[i].statusProject?.description} colorB={"#007bff"} />
                                             : "",
                             responseJson.data[i].priority === "Alta"
                                 ? <OvalosTextComponent text={responseJson.data[i].priority} colorB={"#dc3545"} />
@@ -940,7 +959,7 @@ export default function ProjectsCoordinador(props) {
                                 formikModify.handleChange
                             }} name={"edit"} color={"black"} bgColor={"#ffc107"} />,
                             <ActionsButtons name={"file"} action={() => {
-                                props.navigation.navigate("reports",{
+                                props.navigation.navigate("reports", {
                                     id: responseJson.data[i].id
                                 })
                             }} color={"white"} bgColor={"#28a745"} />
@@ -979,7 +998,7 @@ export default function ProjectsCoordinador(props) {
                 let tempData = []
                 let cont = 0;
                 for (let i = 0; i < responseJson.data.length; i++) {
-                    if (responseJson.data[i].statusProject.description === "Prospecto") {
+                    if (responseJson.data[i].statusProject?.description === "Prospecto") {
                         cont++;
                         let newData = [
                             cont, responseJson.data[i].name, `${responseJson.data[i].client.name} ${responseJson.data[i].client.surname} ${responseJson.data[i].client.secondSurname}`, `${responseJson.data[i].months} meses`, responseJson.data[i].numberBeca
@@ -1274,18 +1293,6 @@ export default function ProjectsCoordinador(props) {
                                 </FormControl>}
                                 <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Analistas programadores"} showIcon={true} Form={
                                     <Stack mt={3} space={4} w="100%">
-                                        {errorToMuch ? <AlertComponent isOpen={setErrorToMuch} status={"error"} title={"Ya se han agregado todos los programadores"} /> : null}
-
-                                        {isLoadingTableUnique ? <Loading /> : <FormControl isRequired>
-                                            <Select isDisabled onValueChange={setProggrammer} accessibilityLabel="Eco" placeholder="Seleccione una opción" _selectedItem={{
-                                                bg: "teal.600",
-                                                endIcon: <CheckIcon size="5" />
-                                            }} mt={1}>
-                                                {personal}
-                                            </Select>
-                                        </FormControl>}
-
-                                        <Button startIcon={<AddIcon on size="4" mt="0.5" color={"#fff"} />} bg={"#042B61"} onPress={addProg}>Agregar</Button>
                                         <TableUniqueComponent isLoadingTable={isLoadingTableUnique} setisLoadingTable={setIsLoadingTableUnique} isOpen={true} title={""}
                                             isSearch={false}
                                             tableHead={['Nombre', 'Correo', 'Rol', 'Eliminar']}
@@ -1515,7 +1522,7 @@ export default function ProjectsCoordinador(props) {
                 </Modal.Body>
             } showModal={showModalModifyProspecto} header={"Modificar proyecto prospecto"} setShowModal={setShowModalModifyProspecto} />
 
-<ModalComponent formik={formikIniciarProspecto} content={
+            <ModalComponent formik={formikIniciarProspecto} content={
                 <Modal.Body>
                     <Center>
                         <BoxHeaderComponent fontColor={"#ffffff"} bgColor={"#049474"} isButton={false} isOpen={false} title={"Datos del proyecto"} showIcon={true} Form={
