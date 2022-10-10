@@ -1,9 +1,6 @@
-# NativeBase Expo Template
-
-The official NativeBase template for [Expo](https://docs.expo.io/)
-
-## Usage
-
-```sh
-expo init my-app --template @native-base/expo-template
-```
+# Datos del proyecto
+Lenguaje: Javascript\
+Framework: React Native\
+Descripción: Aplicación híbrida la cual consume un servicio REST y manipula todas las rutas necesarias para los diferentes roles del sistema\
+# Responsable
+Roy Salgado
